@@ -16,6 +16,7 @@ pygame.display.set_caption("Pac-Man Clone")
 # Cores
 preto = (0, 0, 0)
 amarelo = (255, 255, 0)
+branco = (255, 255, 255)
 
 # Tamanho do grid 
 tamanho_celula = 40
@@ -99,16 +100,22 @@ class Entity:
 
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
-        super(pPosX, pPosY)
+        super().__init__(pPosX, pPosY)
         self.isCollision = True
         # TODO definir aqui qual tipo de spirte vai ser usada, por exemplo | - + 
         # self.sprite = 
     
     def desenhar(self):
         # TODO desenhar na posicao desejada
+        # FIXME
+        x = self.posX * tamanho_celula
+        y = self.posY * tamanho_celula
+        pygame.draw.circle(tela, branco, (x,y), 3)
         pass
 # Instanciacoes
 pacman = Pacman()
+
+obstacles = Obstacle(2, 2, None)
 
 dirAtual = Direcoes.DIREITA
 
@@ -158,6 +165,7 @@ while True:
     # Desenhar na tela
     tela.fill(preto)
     pacman.desenhar()
+    obstacles.desenhar()
     pygame.display.flip()
 
     # Controle de FPS
