@@ -20,6 +20,7 @@ tamanho_celula = 30
 num_colunas = largura // tamanho_celula
 num_linhas = (altura // tamanho_celula) - 1 # O -1 se deve a definicao logica do grid, sem isso o pacman pode sair da tela (assim como os fantasmas)
 
+# Enum de direcoes para a moviemntacao
 class Direcoes(Enum):
     CIMA = 1
     BAIXO = 2
@@ -49,6 +50,13 @@ class Pacman:
         y = self.linha * tamanho_celula + self.raio
         pygame.draw.circle(tela, amarelo, (x, y), self.raio)
 
+# Classe base do fantasma TODO
+
+# Classe base de pickups TODO
+
+# Classe base dos obstaculos TODO
+
+# Instanciacoes
 pacman = Pacman()
 
 dirAtual = Direcoes.DIREITA
