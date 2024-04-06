@@ -98,6 +98,9 @@ class Entity:
     def __init__(self, pPosX, pPosY):
         self.posX = pPosX
         self.posY = pPosY
+        self.isPickup = False
+        self.isCollision = False
+        self.isPower = False
         
     def draw(self):
         pass
@@ -127,6 +130,7 @@ class SuperBall(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
         super().__init__(pPosX, pPosY)
         self.isPickup = True
+        self.isPower = True
     
     def draw(self):
         x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
@@ -145,7 +149,59 @@ class Ball(Entity):
         pygame.draw.circle(tela, branco, (x,y), 5)
         pass
 
-# Instanciacoes
+class Labyrinth:
+    def __init__(self):
+        self.num_linhas = num_linhas
+        self.num_colunas = num_colunas
+        self.textLab = [[' ' for _ in range(num_colunas)] for _ in range(num_linhas)]
+        self.logicalLab = [[' ' for _ in range(num_colunas)] for _ in range(num_linhas)]
+        self.pacPosX = 0
+        self.pacPosY = 0
+
+    def addBall(self, x, y):
+        self.textLab[x][y] = 'o'
+        self.logicalLab = Ball(x, y, None)
+
+    def addSuperBall(self, x, y):
+        self.textLab[x][y] = 'O'
+        self.logicalLab = SuperBall(x, y, None)
+
+    def addGhost(self, x, y):
+        self.textLab[x][y] = 'X'
+        # TODO
+        # self.logicalLab = Ball(x, y, None)
+
+    def addObstacle(self, x, y):
+        self.textLab[x][y] = 'B'
+        self.logicalLab = Obstacle(x, y, None)
+
+    def print(self):
+        for x in self.textLab:
+            print(' '.join(x))
+    
+    def collideLookAhead(self, pacDir):
+        if(pacDir == Direcoes.DIREITA):
+            if isinstance(self.logicalLab[pacPosX + 1][pacPosY], Entity):
+                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                    return True
+                
+            return False
+        elif(pacDir == Direcoes.ESQUERDA):
+            if isinstance(self.logicalLab[pacPosX - 1][pacPosY], Entity):
+                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                    return True
+            return False
+        elif(pacDir == Direcoes.BAIXO):
+            if isinstance(self.logicalLab[pacPosX][pacPosY + 1], Entity):
+                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                    return True
+            return False
+        else:
+            if isinstance(self.logicalLab[pacPosX][pacPosY -1], Entity):
+                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                    return True
+            return False
+
 pacman = Pacman()
 dirAtual = Direcoes.DIREITA
 
@@ -158,10 +214,6 @@ for i in range(0,num_colunas):
     for j in range(0, num_linhas):
         if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
             obstacles.append(Obstacle(i, j, None))
-
-super_balls = SuperBall(5,5,None)
-
-balls = Ball(6, 6, None)
 
 # Loop principal
 while True:
@@ -197,36 +249,15 @@ while True:
     pacPosX = pacman.getPosX()
     pacPosY = pacman.getPosY()
     
-    doesCollide = False
-    # TODO mudar esse jeito de checar por colisoes uma vez que sjea implementado uma matriz para o labirinto
     if(dirAtual == Direcoes.DIREITA):
-        for obstacle in obstacles:
-            if obstacle.collide(pacPosX + 1, pacPosY):
-                doesCollide = True
-                pass
-        if(not doesCollide):
-            pacman.move(1,0)
+        # if not TODO
+        pacman.move(1,0)
     elif(dirAtual == Direcoes.ESQUERDA):
-        for obstacle in obstacles:
-            if obstacle.collide(pacPosX - 1, pacPosY):
-                doesCollide = True
-                pass
-        if(not doesCollide):
-            pacman.move(-1,0)
+        pacman.move(-1,0)
     elif(dirAtual == Direcoes.BAIXO):
-        for obstacle in obstacles:
-            if obstacle.collide(pacPosX, pacPosY + 1):
-                doesCollide = True
-                pass
-        if(not doesCollide):
-            pacman.move(0,1)
+        pacman.move(0,1)
     else:
-        for obstacle in obstacles:
-            if obstacle.collide(pacPosX, pacPosY - 1):
-                doesCollide = True
-                pass
-        if(not doesCollide):
-            pacman.move(0,-1)
+        pacman.move(0,-1)
     
     # Logica das entidades (Fantasmas)
     # TODO
@@ -234,10 +265,6 @@ while True:
     # Desenhar na tela
     tela.fill(preto)
     pacman.draw()
-    for obstacle in obstacles:
-        obstacle.draw()
-    super_balls.draw()
-    balls.draw()
     pygame.display.flip()
 
     # Controle de FPS
