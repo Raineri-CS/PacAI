@@ -15,13 +15,12 @@ pygame.display.set_caption("Pac-Man Clone")
 preto = (0, 0, 0)
 amarelo = (255, 255, 0)
 
-# Tamanho do grid (ajuste conforme necessário)
-tamanho_celula = 20
+# Tamanho do grid 
+tamanho_celula = 30
 num_colunas = largura // tamanho_celula
-num_linhas = altura // tamanho_celula
+num_linhas = (altura // tamanho_celula) - 1 # O -1 se deve a definicao logica do grid, sem isso o pacman pode sair da tela (assim como os fantasmas)
 
 class Direcoes(Enum):
-    """Docstring for Directions."""
     CIMA = 1
     BAIXO = 2
     ESQUERDA = 3
@@ -34,11 +33,11 @@ class Pacman:
         self.coluna = num_colunas // 2
         self.linha = num_linhas // 2
         self.raio = tamanho_celula // 2
-        self.velocidade = 2  # Reduzimos a velocidade
+        self.velocidade = 0.2
 
     def mover(self, dx, dy):
-        nova_coluna = self.coluna + dx
-        nova_linha = self.linha + dy
+        nova_coluna = self.coluna + (dx * self.velocidade)
+        nova_linha = self.linha + (dy * self.velocidade)
 
         # Verifica se a nova posição está dentro do grid
         if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
@@ -50,7 +49,6 @@ class Pacman:
         y = self.linha * tamanho_celula + self.raio
         pygame.draw.circle(tela, amarelo, (x, y), self.raio)
 
-# Instância do Pac-Man
 pacman = Pacman()
 
 dirAtual = Direcoes.DIREITA
@@ -62,7 +60,6 @@ while True:
             pygame.quit()
             sys.exit()
 
-    # Lógica do movimento (use as teclas de seta)
     teclas = pygame.key.get_pressed()
     
     # Usando essa varaivel pois o pacman se move sozinho
@@ -91,4 +88,4 @@ while True:
     pygame.display.flip()
 
     # Controle de FPS
-    pygame.time.Clock().tick(15)  # Reduzimos a taxa de quadros por segundo
+    pygame.time.Clock().tick(60)  
