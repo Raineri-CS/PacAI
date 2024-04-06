@@ -65,15 +65,17 @@ class Ghost:
         self.linha = num_linhas // 2
         self.raio = tamanho_celula // 2
         self.velocidade = pVelocidade
-        
-    def mover(self, dx, dy):
-        nova_coluna = self.coluna + (dx * self.velocidade)
-        nova_linha = self.linha + (dy * self.velocidade)
+        self.accumulator = 0
 
-        # Verifica se a nova posição está dentro do grid
-        if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
-            self.coluna = nova_coluna
-            self.linha = nova_linha
+    def mover(self, dx, dy):
+        if(self.accumulator >= 1):
+            self.accumulator = 0
+            nova_coluna = self.coluna + dx
+            nova_linha = self.linha + dy
+            # Verifica se a nova posição está dentro do grid
+            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+                self.coluna = nova_coluna
+                self.linha = nova_linha
 
     def desenhar(self):
         # TODO arrumar o desenho do fantasma aqui
