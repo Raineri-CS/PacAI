@@ -17,6 +17,7 @@ pygame.display.set_caption("Pac-Man Clone")
 preto = (0, 0, 0)
 amarelo = (255, 255, 0)
 branco = (255, 255, 255)
+azul = (0, 0, 255)
 
 # Tamanho do grid 
 tamanho_celula = 40
@@ -35,8 +36,8 @@ class Direcoes(Enum):
 class Pacman:
 
     def __init__(self):
-        self.coluna = num_colunas // 2
-        self.linha = num_linhas // 2
+        self.x = num_colunas // 2
+        self.y = num_linhas // 2
         self.raio = tamanho_celula // 2
         self.velocidade = 0.2 # A 0.2 de velocidade, o pacman anda uma vez a cada 5 ticks
         self.isSuper = False # Estado que controla se o pacman pode comer fantasmas ou nao
@@ -45,19 +46,25 @@ class Pacman:
     def move(self, dx, dy):
         if(self.accumulator >= 1):
             self.accumulator = 0
-            nova_coluna = self.coluna + dx
-            nova_linha = self.linha + dy
+            nova_coluna = self.x + dx
+            nova_linha = self.y + dy
             # Verifica se a nova posição está dentro do grid
             if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
-                self.coluna = nova_coluna
-                self.linha = nova_linha
+                self.x = nova_coluna
+                self.y = nova_linha
         else:
             self.accumulator += self.velocidade
 
     def draw(self):
-        x = self.coluna * tamanho_celula + self.raio
-        y = self.linha * tamanho_celula + self.raio
+        x = self.x * tamanho_celula + self.raio
+        y = self.y * tamanho_celula + self.raio
         pygame.draw.circle(tela, amarelo, (x, y), self.raio)
+        
+    def getPosX(self):
+        return self.x
+    
+    def getPosY(self):
+        return self.y
 
 # Classe base do fantasma TODO
 class Ghost:
@@ -87,9 +94,6 @@ class Ghost:
 
 # TODO Classes derivadas dos fantasmas
 
-# Classe base de pickups TODO
-# Classe base dos obstaculos TODO
-
 class Entity:
     def __init__(self, pPosX, pPosY):
         self.posX = pPosX
@@ -114,9 +118,9 @@ class Obstacle(Entity):
     def draw(self):
         # TODO desenhar na posicao desejada
         # FIXME
-        x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
-        y = (self.posY * tamanho_celula) + (tamanho_celula / 2)
-        pygame.draw.circle(tela, branco, (x,y), 10)
+        x = (self.posX * tamanho_celula) + (tamanho_celula / 4)
+        y = (self.posY * tamanho_celula) + (tamanho_celula / 4)
+        pygame.draw.rect(tela, azul, pygame.Rect(x,y,tamanho_celula/2,tamanho_celula/2))
         pass
     
 class SuperBall(Entity):
@@ -143,14 +147,22 @@ class Ball(Entity):
 
 # Instanciacoes
 pacman = Pacman()
+dirAtual = Direcoes.DIREITA
 
-obstacles = Obstacle(0, 0, None)
+# TODO fazer com que essas variaveis sejam arrays
+# NOTE ou, alternativamente, criar uma casse labirynth que contem essas infos, podendo ser trocado o labirinto a partir de um arquivo 
+obstacles = []
+
+# FIXME remover depois, somente para teste!!!
+for i in range(0,num_colunas):
+    for j in range(0, num_linhas):
+        if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
+            obstacles.append(Obstacle(i, j, None))
 
 super_balls = SuperBall(5,5,None)
 
 balls = Ball(6, 6, None)
 
-dirAtual = Direcoes.DIREITA
 
 # Loop principal
 while True:
@@ -181,24 +193,49 @@ while True:
         dirAtual = Direcoes.BAIXO
     elif(teclas[pygame.K_UP]):
         dirAtual = Direcoes.CIMA
+    
+    # TODO talvez mudar isso? Fiz por eficiencia em testar    
+    pacPosX = pacman.getPosX()
+    pacPosY = pacman.getPosY()
+    
+    doesCollide = False
         
     if(dirAtual == Direcoes.DIREITA):
-        pacman.move(1,0)
+        for obstacle in obstacles:
+            if obstacle.collide(pacPosX + 1, pacPosY):
+                doesCollide = True
+                pass
+        if(not doesCollide):
+            pacman.move(1,0)
     elif(dirAtual == Direcoes.ESQUERDA):
-        pacman.move(-1,0)
+        for obstacle in obstacles:
+            if obstacle.collide(pacPosX - 1, pacPosY):
+                doesCollide = True
+                pass
+        if(not doesCollide):
+            pacman.move(-1,0)
     elif(dirAtual == Direcoes.BAIXO):
-        pacman.move(0,1)
+        for obstacle in obstacles:
+            if obstacle.collide(pacPosX, pacPosY + 1):
+                doesCollide = True
+                pass
+        if(not doesCollide):
+            pacman.move(0,1)
     else:
-        pacman.move(0,-1)
-        
-        
+        for obstacle in obstacles:
+            if obstacle.collide(pacPosX, pacPosY - 1):
+                doesCollide = True
+                pass
+        if(not doesCollide):
+            pacman.move(0,-1)
     # Logica das entidades (Fantasmas)
     # TODO
 
     # Desenhar na tela
     tela.fill(preto)
     pacman.draw()
-    obstacles.draw()
+    for obstacle in obstacles:
+        obstacle.draw()
     super_balls.draw()
     balls.draw()
     pygame.display.flip()
