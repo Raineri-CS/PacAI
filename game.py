@@ -42,7 +42,7 @@ class Pacman:
         self.isSuper = False # Estado que controla se o pacman pode comer fantasmas ou nao
         self.accumulator = 0
 
-    def mover(self, dx, dy):
+    def move(self, dx, dy):
         if(self.accumulator >= 1):
             self.accumulator = 0
             nova_coluna = self.coluna + dx
@@ -54,7 +54,7 @@ class Pacman:
         else:
             self.accumulator += self.velocidade
 
-    def desenhar(self):
+    def draw(self):
         x = self.coluna * tamanho_celula + self.raio
         y = self.linha * tamanho_celula + self.raio
         pygame.draw.circle(tela, amarelo, (x, y), self.raio)
@@ -68,7 +68,7 @@ class Ghost:
         self.velocidade = pVelocidade
         self.accumulator = 0
 
-    def mover(self, dx, dy):
+    def move(self, dx, dy):
         if(self.accumulator >= 1):
             self.accumulator = 0
             nova_coluna = self.coluna + dx
@@ -78,7 +78,7 @@ class Ghost:
                 self.coluna = nova_coluna
                 self.linha = nova_linha
 
-    def desenhar(self):
+    def draw(self):
         # TODO arrumar o desenho do fantasma aqui
         # TODO talvez deixar esse metodo vazio pois a classe derivada que vai se auto definir o desenho
         x = self.coluna * tamanho_celula + self.raio
@@ -95,8 +95,14 @@ class Entity:
         self.posX = pPosX
         self.posY = pPosY
         
-    def desenhar(self):
+    def draw(self):
         pass
+    
+    def collide(self, x, y):
+        if(self.posX == x and self.posY == y):
+            # Colisao
+            return True
+        return False
 
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
@@ -105,17 +111,44 @@ class Obstacle(Entity):
         # TODO definir aqui qual tipo de spirte vai ser usada, por exemplo | - + 
         # self.sprite = 
     
-    def desenhar(self):
+    def draw(self):
         # TODO desenhar na posicao desejada
         # FIXME
-        x = self.posX * tamanho_celula
-        y = self.posY * tamanho_celula
-        pygame.draw.circle(tela, branco, (x,y), 3)
+        x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
+        y = (self.posY * tamanho_celula) + (tamanho_celula / 2)
+        pygame.draw.circle(tela, branco, (x,y), 10)
         pass
+    
+class SuperBall(Entity):
+    def __init__(self, pPosX, pPosY, spriteType):
+        super().__init__(pPosX, pPosY)
+        self.isPickup = True
+    
+    def draw(self):
+        x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
+        y = (self.posY * tamanho_celula) + (tamanho_celula / 2)
+        pygame.draw.circle(tela, branco, (x,y), 10)
+        pass
+    
+class Ball(Entity):
+    def __init__(self, pPosX, pPosY, spriteType):
+        super().__init__(pPosX, pPosY)
+        self.isPickup = True
+    
+    def draw(self):
+        x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
+        y = (self.posY * tamanho_celula) + (tamanho_celula / 2)
+        pygame.draw.circle(tela, branco, (x,y), 5)
+        pass
+
 # Instanciacoes
 pacman = Pacman()
 
-obstacles = Obstacle(2, 2, None)
+obstacles = Obstacle(0, 0, None)
+
+super_balls = SuperBall(5,5,None)
+
+balls = Ball(6, 6, None)
 
 dirAtual = Direcoes.DIREITA
 
@@ -150,13 +183,13 @@ while True:
         dirAtual = Direcoes.CIMA
         
     if(dirAtual == Direcoes.DIREITA):
-        pacman.mover(1,0)
+        pacman.move(1,0)
     elif(dirAtual == Direcoes.ESQUERDA):
-        pacman.mover(-1,0)
+        pacman.move(-1,0)
     elif(dirAtual == Direcoes.BAIXO):
-        pacman.mover(0,1)
+        pacman.move(0,1)
     else:
-        pacman.mover(0,-1)
+        pacman.move(0,-1)
         
         
     # Logica das entidades (Fantasmas)
@@ -164,8 +197,10 @@ while True:
 
     # Desenhar na tela
     tela.fill(preto)
-    pacman.desenhar()
-    obstacles.desenhar()
+    pacman.draw()
+    obstacles.draw()
+    super_balls.draw()
+    balls.draw()
     pygame.display.flip()
 
     # Controle de FPS
