@@ -51,6 +51,30 @@ class Pacman:
         pygame.draw.circle(tela, amarelo, (x, y), self.raio)
 
 # Classe base do fantasma TODO
+class Ghost:
+    def __init__(self, pVelocidade):
+        self.coluna = num_colunas // 2
+        self.linha = num_linhas // 2
+        self.raio = tamanho_celula // 2
+        self.velocidade = pVelocidade
+        
+    def mover(self, dx, dy):
+        nova_coluna = self.coluna + (dx * self.velocidade)
+        nova_linha = self.linha + (dy * self.velocidade)
+
+        # Verifica se a nova posição está dentro do grid
+        if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+            self.coluna = nova_coluna
+            self.linha = nova_linha
+
+    def desenhar(self):
+        # TODO arrumar o desenho do fantasma aqui
+        # TODO talvez deixar esse metodo vazio pois a classe derivada que vai se auto definir o desenho
+        x = self.coluna * tamanho_celula + self.raio
+        y = self.linha * tamanho_celula + self.raio
+        pygame.draw.circle(tela, amarelo, (x, y), self.raio)
+
+# TODO Classes derivadas dos fantasmas
 
 # Classe base de pickups TODO
 
@@ -68,6 +92,8 @@ while True:
             pygame.quit()
             sys.exit()
 
+    # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
+    # Logica do player (pacman)
     teclas = pygame.key.get_pressed()
     
     # Usando essa varaivel pois o pacman se move sozinho
@@ -89,6 +115,9 @@ while True:
     else:
         pacman.mover(0,-1)
         
+        
+    # Logica das entidades (Fantasmas)
+    # TODO
 
     # Desenhar na tela
     tela.fill(preto)
