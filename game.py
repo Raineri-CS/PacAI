@@ -1,5 +1,7 @@
 import pygame
 import sys
+
+from pygame.locals import *
 from enum import Enum
 
 
@@ -16,9 +18,10 @@ preto = (0, 0, 0)
 amarelo = (255, 255, 0)
 
 # Tamanho do grid 
-tamanho_celula = 30
-num_colunas = largura // tamanho_celula
-num_linhas = (altura // tamanho_celula) - 1 # O -1 se deve a definicao logica do grid, sem isso o pacman pode sair da tela (assim como os fantasmas)
+tamanho_celula = 40
+
+num_colunas = largura // tamanho_celula 
+num_linhas = altura // tamanho_celula 
 
 # Enum de direcoes para a moviemntacao
 class Direcoes(Enum):
@@ -34,16 +37,21 @@ class Pacman:
         self.coluna = num_colunas // 2
         self.linha = num_linhas // 2
         self.raio = tamanho_celula // 2
-        self.velocidade = 0.2
+        self.velocidade = 0.2 # A 0.2 de velocidade, o pacman anda uma vez a cada 5 ticks
+        self.isSuper = False # Estado que controla se o pacman pode comer fantasmas ou nao
+        self.accumulator = 0
 
     def mover(self, dx, dy):
-        nova_coluna = self.coluna + (dx * self.velocidade)
-        nova_linha = self.linha + (dy * self.velocidade)
-
-        # Verifica se a nova posição está dentro do grid
-        if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
-            self.coluna = nova_coluna
-            self.linha = nova_linha
+        if(self.accumulator >= 1):
+            self.accumulator = 0
+            nova_coluna = self.coluna + dx
+            nova_linha = self.linha + dy
+            # Verifica se a nova posição está dentro do grid
+            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+                self.coluna = nova_coluna
+                self.linha = nova_linha
+        else:
+            self.accumulator += self.velocidade
 
     def desenhar(self):
         x = self.coluna * tamanho_celula + self.raio
@@ -77,9 +85,26 @@ class Ghost:
 # TODO Classes derivadas dos fantasmas
 
 # Classe base de pickups TODO
-
 # Classe base dos obstaculos TODO
 
+class Entity:
+    def __init__(self, pPosX, pPosY):
+        self.posX = pPosX
+        self.posY = pPosY
+        
+    def desenhar(self):
+        pass
+
+class Obstacle(Entity):
+    def __init__(self, pPosX, pPosY, spriteType):
+        super(pPosX, pPosY)
+        self.isCollision = True
+        # TODO definir aqui qual tipo de spirte vai ser usada, por exemplo | - + 
+        # self.sprite = 
+    
+    def desenhar(self):
+        # TODO desenhar na posicao desejada
+        pass
 # Instanciacoes
 pacman = Pacman()
 
@@ -91,7 +116,16 @@ while True:
         if evento.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        elif evento.type == KEYDOWN:
+            if(evento.key == K_q or evento.key == K_ESCAPE):
+                pygame.quit()
+                sys.exit()
 
+    # TODO para todo fantasma, verificar se o pacman ocupa a mesma posicao que o mesmo, checando se esta no estado "super"
+
+    # TODO fazer um look ahead para que se veja se o pacman vai colidir com alguma coisa na proxima "andada", se sim, settar uma variavel?
+    # NOTE ideia : checar SOMENTE o primeiro bloco na frente da direcao em que o pacman esta se movendo
+    
     # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
     # Logica do player (pacman)
     teclas = pygame.key.get_pressed()
