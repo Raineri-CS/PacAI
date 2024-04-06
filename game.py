@@ -163,7 +163,6 @@ super_balls = SuperBall(5,5,None)
 
 balls = Ball(6, 6, None)
 
-
 # Loop principal
 while True:
     for evento in pygame.event.get():
@@ -199,7 +198,7 @@ while True:
     pacPosY = pacman.getPosY()
     
     doesCollide = False
-        
+    # TODO mudar esse jeito de checar por colisoes uma vez que sjea implementado uma matriz para o labirinto
     if(dirAtual == Direcoes.DIREITA):
         for obstacle in obstacles:
             if obstacle.collide(pacPosX + 1, pacPosY):
@@ -228,6 +227,7 @@ while True:
                 pass
         if(not doesCollide):
             pacman.move(0,-1)
+    
     # Logica das entidades (Fantasmas)
     # TODO
 
