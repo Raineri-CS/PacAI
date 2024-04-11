@@ -202,18 +202,37 @@ class Labyrinth:
                     return True
             return False
 
+class Labirinto:
+    def __init__(self):
+        self.mapa = [
+            "   B   B   ",
+            " O     B  O",
+            " B   B    O",
+            " B        B",
+            "  O B  B   ",
+            "           ",
+            " B   B   B ",
+            "           "
+        ]
+        self.entities = {}
+
+    def build_entities(self):
+        for y in range(len(self.mapa)):
+            for x in range(len(self.mapa[y])):
+                char = self.mapa[y][x]
+                if char == 'B':
+                    self.entities[(x, y)] = Obstacle(x, y, spriteType=None)  
+                elif char == 'O':
+                    self.entities[(x, y)] = Ball(x, y, spriteType=None)  
+    def draw(self):
+        for pos, entity in self.entities.items():
+            entity.draw()
+
+
+labirinto = Labirinto()
+labirinto.build_entities()
+
 pacman = Pacman()
-dirAtual = Direcoes.DIREITA
-
-# TODO fazer com que essas variaveis sejam arrays
-# NOTE ou, alternativamente, criar uma casse labirynth que contem essas infos, podendo ser trocado o labirinto a partir de um arquivo 
-obstacles = []
-
-# FIXME remover depois, somente para teste!!!
-for i in range(0,num_colunas):
-    for j in range(0, num_linhas):
-        if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
-            obstacles.append(Obstacle(i, j, None))
 
 # Loop principal
 while True:
@@ -264,6 +283,7 @@ while True:
 
     # Desenhar na tela
     tela.fill(preto)
+    labirinto.draw()
     pacman.draw()
     pygame.display.flip()
 
