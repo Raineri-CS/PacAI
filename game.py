@@ -127,27 +127,26 @@ class Ghost(Entity):
 class GhostGulosa(Ghost):
     def __init__(self,pVelocidade,x,y,color):
         super().__init__(pVelocidade,x,y,color)
-    def move(self,pacman_coluna,pacman_linha):
-        if self.accumulator >=1:
+        
+    def update(self,pacman_coluna,pacman_linha):
+        if self.accumulator >= 1:
             self.accumulator = 0
             
-            dx = pacman_coluna - self.coluna
-            dy = pacman_linha - self.linha
+            dx = pacman_coluna - self.posX
+            dy = pacman_linha - self.posY
             
             if abs(dx) > abs(dy):
-                nova_coluna = self.coluna + math.copysigned(1,dx)
-                nova_linha = self.linha
+                nova_coluna = self.posX + math.copysign(1,dx)
+                nova_linha = self.posY
             else:
-                nova_coluna = self.coluna
-                nova_linha = self.linha + math.copysigned(1,dy)
+                nova_coluna = self.posX
+                nova_linha = self.posY + math.copysign(1,dy)
                 
-            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha <num_linhas:
-                self.coluna = nova_coluna
-                self.linha = nova_linha
+            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+                self.posX = nova_coluna
+                self.posY = nova_linha
                 
-            else:
-                self.accumulator += self.velocidade    
-    
+        self.accumulator += self.velocidade
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
         super().__init__(pPosX, pPosY)
@@ -205,12 +204,10 @@ class Labyrinth:
 
     def addGhost(self, x, y):
         self.textLab[x][y] = 'X'
-        # TODO
         self.logicalLab[x][y] = Ghost(0.05, x, y, None)
     
     def addGhostGulosa(self, x, y):
         self.textLab[x][y] = 'G'
-        # TODO
         self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
 
     def addObstacle(self, x, y):
@@ -262,7 +259,6 @@ class Labyrinth:
                 elif symbol == 'G':
                     self.addGhostGulosa(i,j)   
                     
-                
     def readLabFromFile(self):
         f = open(f'{lab_index}.txt', 'r')
 
@@ -282,14 +278,7 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
 
-lab.addGhost(4,4)
 lab.addGhostGulosa(10,10)
-
-# FIXME remover depois, somente para teste!!!
-# for i in range(0,(num_colunas)):
-#     for j in range(0, (num_linhas)):
-#         if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
-#             lab.addObstacle(i, j)
 
 # Loop principal
 while True:
@@ -348,6 +337,8 @@ while True:
     for line in lab.logicalLab:
         for entity in line:
             if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
+                if isinstance(entity, Ghost):
+                    entity.update(pacPosX, pacPosY)
                 entity.draw()
             
     pygame.display.flip()
