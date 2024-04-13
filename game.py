@@ -18,6 +18,7 @@ preto = (0, 0, 0)
 amarelo = (255, 255, 0)
 branco = (255, 255, 255)
 azul = (0, 0, 255)
+vermelho = (255, 0, 0)
 
 # Tamanho do grid 
 tamanho_celula = 40
@@ -66,34 +67,6 @@ class Pacman:
     def getPosY(self):
         return self.y
 
-# Classe base do fantasma TODO
-class Ghost:
-    def __init__(self, pVelocidade):
-        self.coluna = num_colunas // 2
-        self.linha = num_linhas // 2
-        self.raio = tamanho_celula // 2
-        self.velocidade = pVelocidade
-        self.accumulator = 0
-
-    def move(self, dx, dy):
-        if(self.accumulator >= 1):
-            self.accumulator = 0
-            nova_coluna = self.coluna + dx
-            nova_linha = self.linha + dy
-            # Verifica se a nova posição está dentro do grid
-            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
-                self.coluna = nova_coluna
-                self.linha = nova_linha
-
-    def draw(self):
-        # TODO arrumar o desenho do fantasma aqui
-        # TODO talvez deixar esse metodo vazio pois a classe derivada que vai se auto definir o desenho
-        x = self.coluna * tamanho_celula + self.raio
-        y = self.linha * tamanho_celula + self.raio
-        pygame.draw.circle(tela, amarelo, (x, y), self.raio)
-
-# TODO Classes derivadas dos fantasmas
-
 class Entity:
     def __init__(self, pPosX, pPosY):
         self.posX = pPosX
@@ -101,6 +74,7 @@ class Entity:
         self.isPickup = False
         self.isCollision = False
         self.isPower = False
+        self.isEnemy = False
         
     def draw(self):
         pass
@@ -110,6 +84,40 @@ class Entity:
             # Colisao
             return True
         return False
+
+# TODO Classes derivadas dos fantasmas
+# Classe base do fantasma TODO
+class Ghost(Entity):
+    def __init__(self, pVelocidade, x, y, color):
+        self.raio = tamanho_celula // 2
+        self.velocidade = pVelocidade
+        self.accumulator = 0
+        self.color = color
+        super().__init__(x, y)
+        # Redefinicao
+        self.isEnemy = True
+
+    def move(self, dx, dy):
+        if(self.accumulator >= 1):
+            self.accumulator = 0
+            nova_coluna = self.posX + dx
+            nova_linha = self.posY + dy
+            # Verifica se a nova posição está dentro do grid
+            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+                self.posX = nova_coluna
+                self.posY = nova_linha
+
+    def draw(self):
+        # TODO arrumar o desenho do fantasma aqui
+        # TODO talvez deixar esse metodo vazio pois a classe derivada que vai se auto definir o desenho
+        x = self.posX * tamanho_celula + self.raio
+        y = self.posY * tamanho_celula + self.raio
+        pygame.draw.circle(tela, vermelho, (x, y), self.raio)
+        
+    def update():
+        # TODO calcula o prox movimento
+        pass
+
 
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
@@ -160,16 +168,16 @@ class Labyrinth:
 
     def addBall(self, x, y):
         self.textLab[x][y] = 'o'
-        self.logicalLab = Ball(x, y, None)
+        self.logicalLab[x][y] = Ball(x, y, None)
 
     def addSuperBall(self, x, y):
         self.textLab[x][y] = 'O'
-        self.logicalLab = SuperBall(x, y, None)
+        self.logicalLab[x][y] = SuperBall(x, y, None)
 
     def addGhost(self, x, y):
         self.textLab[x][y] = 'X'
         # TODO
-        # self.logicalLab = Ball(x, y, None)
+        self.logicalLab[x][y] = Ghost(0.05, x, y, None)
 
     def addObstacle(self, x, y):
         self.textLab[x][y] = 'B'
@@ -219,8 +227,7 @@ pacman = Pacman()
 dirAtual = Direcoes.DIREITA
 lab = Labyrinth()
 
-# TODO fazer com que essas variaveis sejam arrays
-# NOTE ou, alternativamente, criar uma casse labirynth que contem essas infos, podendo ser trocado o labirinto a partir de um arquivo 
+lab.addGhost(4,4)
 
 # FIXME remover depois, somente para teste!!!
 for i in range(0,(num_colunas)):
@@ -284,8 +291,9 @@ while True:
 
     for line in lab.logicalLab:
         for entity in line:
-            if(isinstance(entity, Entity)):
+            if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
                 entity.draw()
+            
     pygame.display.flip()
 
     # Controle de FPS
