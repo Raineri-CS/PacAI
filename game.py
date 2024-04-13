@@ -39,7 +39,7 @@ class Pacman:
         self.x = num_colunas // 2
         self.y = num_linhas // 2
         self.raio = tamanho_celula // 2
-        self.velocidade = 0.2 # A 0.2 de velocidade, o pacman anda uma vez a cada 5 ticks
+        self.velocidade = 0.12 # A 0.2 de velocidade, o pacman anda uma vez a cada 5 ticks
         self.isSuper = False # Estado que controla se o pacman pode comer fantasmas ou nao
         self.accumulator = 0
 
@@ -153,8 +153,8 @@ class Labyrinth:
     def __init__(self):
         self.num_linhas = num_linhas
         self.num_colunas = num_colunas
-        self.textLab = [[' ' for _ in range(num_colunas)] for _ in range(num_linhas)]
-        self.logicalLab = [[' ' for _ in range(num_colunas)] for _ in range(num_linhas)]
+        self.textLab = [[' ' for _ in range(num_linhas)] for _ in range(num_colunas)]
+        self.logicalLab = [[' ' for _ in range(num_linhas)] for _ in range(num_colunas)]
         self.pacPosX = 0
         self.pacPosY = 0
 
@@ -172,8 +172,9 @@ class Labyrinth:
         # self.logicalLab = Ball(x, y, None)
 
     def addObstacle(self, x, y):
+        print(f"escrevendo em {x} {y}\n")
         self.textLab[x][y] = 'B'
-        self.logicalLab = Obstacle(x, y, None)
+        self.logicalLab[x][y] =  Obstacle(x, y, None)
 
     def print(self):
         for x in self.textLab:
@@ -188,32 +189,32 @@ class Labyrinth:
             return False
         elif(pacDir == Direcoes.ESQUERDA):
             if isinstance(self.logicalLab[pacPosX - 1][pacPosY], Entity):
-                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                if self.logicalLab[pacPosX - 1][pacPosY].isCollision:
                     return True
             return False
         elif(pacDir == Direcoes.BAIXO):
             if isinstance(self.logicalLab[pacPosX][pacPosY + 1], Entity):
-                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                if self.logicalLab[pacPosX][pacPosY + 1].isCollision:
                     return True
             return False
         else:
             if isinstance(self.logicalLab[pacPosX][pacPosY -1], Entity):
-                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+                if self.logicalLab[pacPosX][pacPosY - 1].isCollision:
                     return True
             return False
 
 pacman = Pacman()
 dirAtual = Direcoes.DIREITA
+lab = Labyrinth()
 
 # TODO fazer com que essas variaveis sejam arrays
 # NOTE ou, alternativamente, criar uma casse labirynth que contem essas infos, podendo ser trocado o labirinto a partir de um arquivo 
-obstacles = []
 
 # FIXME remover depois, somente para teste!!!
-for i in range(0,num_colunas):
-    for j in range(0, num_linhas):
+for i in range(0,(num_colunas)):
+    for j in range(0, (num_linhas)):
         if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
-            obstacles.append(Obstacle(i, j, None))
+            lab.addObstacle(i, j)
 
 # Loop principal
 while True:
@@ -250,14 +251,17 @@ while True:
     pacPosY = pacman.getPosY()
     
     if(dirAtual == Direcoes.DIREITA):
-        # if not TODO
-        pacman.move(1,0)
+        if not lab.collideLookAhead(dirAtual):   
+            pacman.move(1,0)
     elif(dirAtual == Direcoes.ESQUERDA):
-        pacman.move(-1,0)
+        if not lab.collideLookAhead(dirAtual):   
+            pacman.move(-1,0)
     elif(dirAtual == Direcoes.BAIXO):
-        pacman.move(0,1)
+        if not lab.collideLookAhead(dirAtual):   
+            pacman.move(0,1)
     else:
-        pacman.move(0,-1)
+        if not lab.collideLookAhead(dirAtual):   
+            pacman.move(0,-1)
     
     # Logica das entidades (Fantasmas)
     # TODO
@@ -265,6 +269,12 @@ while True:
     # Desenhar na tela
     tela.fill(preto)
     pacman.draw()
+
+    for line in lab.logicalLab:
+        for entity in line:
+            if(isinstance(entity, Entity)):
+                entity.draw()
+    print(f"X:{pacPosX} Y:{pacPosY}")
     pygame.display.flip()
 
     # Controle de FPS
