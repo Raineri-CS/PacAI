@@ -333,9 +333,7 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
 
-lab.addGhostGulosa(11,10)
-lab.addBall(10,10)
-lab.addSuperBall(15,15)
+paused = False
 # Loop principal
 while True:
     for evento in pygame.event.get():
@@ -346,60 +344,61 @@ while True:
             if(evento.key == K_q or evento.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
-
-    # TODO para todo fantasma, verificar se o pacman ocupa a mesma posicao que o mesmo, checando se esta no estado "super"
-
-    # TODO fazer um look ahead para que se veja se o pacman vai colidir com alguma coisa na proxima "andada", se sim, settar uma variavel?
-    # NOTE ideia : checar SOMENTE o primeiro bloco na frente da direcao em que o pacman esta se movendo
-    
-    # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
-    # Logica do player (pacman)
-    teclas = pygame.key.get_pressed()
-    
-    # Usando essa varaivel pois o pacman se move sozinho
-    if(teclas[pygame.K_RIGHT]):
-        dirAtual = Direcoes.DIREITA
-    elif(teclas[pygame.K_LEFT]):
-        dirAtual = Direcoes.ESQUERDA
-    elif(teclas[pygame.K_DOWN]):
-        dirAtual = Direcoes.BAIXO
-    elif(teclas[pygame.K_UP]):
-        dirAtual = Direcoes.CIMA
-    
-    # TODO talvez mudar isso? Fiz por eficiencia em testar    
-    pacPosX = pacman.getPosX()
-    pacPosY = pacman.getPosY()
-    
-    if(dirAtual == Direcoes.DIREITA):
-        if not lab.collideLookAhead(dirAtual):   
-            pacman.move(1,0)
-    elif(dirAtual == Direcoes.ESQUERDA):
-        if not lab.collideLookAhead(dirAtual):   
-            pacman.move(-1,0)
-    elif(dirAtual == Direcoes.BAIXO):
-        if not lab.collideLookAhead(dirAtual):   
-            pacman.move(0,1)
-    else:
-        if not lab.collideLookAhead(dirAtual):   
-            pacman.move(0,-1)
-    
-    
-    # Desenhar na tela
-    tela.fill(preto)
-    pacman.draw()
-
-    for line in lab.logicalLab:
-        for entity in line:
-            if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
-                if isinstance(entity, Ghost):
-                    entity.update(pacPosX, pacPosY)
-                    while(lab.ghostCollideLookAhead(entity)):
-                        entity.dir = random.choice(list(Direcoes))
-                    entity.move(entity.dir)
-                if entity.isDrawable:
-                    entity.draw()
+            elif(evento.key == K_SPACE):
+                paused = not paused
             
+    if not paused:
+        
+        # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
+        # Logica do player (pacman)
+        teclas = pygame.key.get_pressed()
+
+        # Usando essa varaivel pois o pacman se move sozinho
+        if(teclas[pygame.K_RIGHT]):
+            dirAtual = Direcoes.DIREITA
+        elif(teclas[pygame.K_LEFT]):
+            dirAtual = Direcoes.ESQUERDA
+        elif(teclas[pygame.K_DOWN]):
+            dirAtual = Direcoes.BAIXO
+        elif(teclas[pygame.K_UP]):
+            dirAtual = Direcoes.CIMA
+
+        # TODO talvez mudar isso? Fiz por eficiencia em testar    
+        pacPosX = pacman.getPosX()
+        pacPosY = pacman.getPosY()
+
+        if(dirAtual == Direcoes.DIREITA):
+            if not lab.collideLookAhead(dirAtual):   
+                pacman.move(1,0)
+        elif(dirAtual == Direcoes.ESQUERDA):
+            if not lab.collideLookAhead(dirAtual):   
+                pacman.move(-1,0)
+        elif(dirAtual == Direcoes.BAIXO):
+            if not lab.collideLookAhead(dirAtual):   
+                pacman.move(0,1)
+        else:
+            if not lab.collideLookAhead(dirAtual):   
+                pacman.move(0,-1)
+
+    
+        # Desenhar na tela
+        tela.fill(preto)
+        pacman.draw()
+
+        for line in lab.logicalLab:
+            for entity in line:
+                if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
+                    if isinstance(entity, Ghost):
+                        entity.update(pacPosX, pacPosY)
+                        while(lab.ghostCollideLookAhead(entity)):
+                            entity.dir = random.choice(list(Direcoes))
+                        entity.move(entity.dir)
+                    if entity.isDrawable:
+                        entity.draw()
+    else:
+        tela.fill(vermelho)
+        
     pygame.display.flip()
 
     # Controle de FPS
-    pygame.time.Clock().tick(60)  
+    pygame.time.Clock().tick(60)
