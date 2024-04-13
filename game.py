@@ -1,5 +1,6 @@
 import pygame
 import sys
+import math
 
 from pygame.locals import *
 from enum import Enum
@@ -123,7 +124,30 @@ class Ghost(Entity):
         # TODO calcula o prox movimento
         pass
 
-
+class GhostGulosa(Ghost):
+    def __init__(self,pVelocidade,x,y,color):
+        super().__init__(pVelocidade,x,y,color)
+    def move(self,pacman_coluna,pacman_linha):
+        if self.accumulator >=1:
+            self.accumulator = 0
+            
+            dx = pacman_coluna - self.coluna
+            dy = pacman_linha - self.linha
+            
+            if abs(dx) > abs(dy):
+                nova_coluna = self.coluna + math.copysigned(1,dx)
+                nova_linha = self.linha
+            else:
+                nova_coluna = self.coluna
+                nova_linha = self.linha + math.copysigned(1,dy)
+                
+            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha <num_linhas:
+                self.coluna = nova_coluna
+                self.linha = nova_linha
+                
+            else:
+                self.accumulator += self.velocidade    
+    
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
         super().__init__(pPosX, pPosY)
@@ -183,6 +207,11 @@ class Labyrinth:
         self.textLab[x][y] = 'X'
         # TODO
         self.logicalLab[x][y] = Ghost(0.05, x, y, None)
+    
+    def addGhostGulosa(self, x, y):
+        self.textLab[x][y] = 'G'
+        # TODO
+        self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
 
     def addObstacle(self, x, y):
         self.textLab[x][y] = 'B'
@@ -230,7 +259,9 @@ class Labyrinth:
                     self.addObstacle(i,j)
                 elif symbol == 'X':
                     self.addGhost(i,j)
-                    pass
+                elif symbol == 'G':
+                    self.addGhostGulosa(i,j)   
+                    
                 
     def readLabFromFile(self):
         f = open(f'{lab_index}.txt', 'r')
@@ -252,6 +283,7 @@ lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
 
 lab.addGhost(4,4)
+lab.addGhostGulosa(10,10)
 
 # FIXME remover depois, somente para teste!!!
 # for i in range(0,(num_colunas)):
