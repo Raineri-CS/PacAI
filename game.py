@@ -9,7 +9,7 @@ from enum import Enum
 pygame.init()
 
 # Configurações da tela
-largura, altura = 800, 600
+largura, altura = 810, 600
 tela = pygame.display.set_mode((largura, altura))
 pygame.display.set_caption("Pac-Man Clone")
 
@@ -20,8 +20,13 @@ branco = (255, 255, 255)
 azul = (0, 0, 255)
 vermelho = (255, 0, 0)
 
+#TODO fazer a funcao de reset
+
+# Indice do laboratorio, incrementa conforme os niveis sobem
+lab_index = 1
+
 # Tamanho do grid 
-tamanho_celula = 40
+tamanho_celula = 30
 
 num_colunas = largura // tamanho_celula 
 num_linhas = altura // tamanho_celula 
@@ -192,6 +197,10 @@ class Labyrinth:
             if isinstance(self.logicalLab[pacPosX + 1][pacPosY], Entity):
                 if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
                     return True
+                elif self.logicalLab[pacPosX + 1][pacPosY].isEnemy:
+                    #TODO resetar o labirinto (pacman e os fantasmas, voltar para o primerio labrinto) aqui
+                    #TODO checar se o pacman esta super poderoso, se for o caso, mandar o fantasma de volta a origem
+                    pass
                 
             return False
         elif(pacDir == Direcoes.ESQUERDA):
@@ -222,18 +231,33 @@ class Labyrinth:
                 elif symbol == 'X':
                     self.addGhost(i,j)
                     pass
+                
+    def readLabFromFile(self):
+        f = open(f'{lab_index}.txt', 'r')
+
+        data = f.readlines()
+
+        for i, line in enumerate(data):
+            for j, char in enumerate(line):
+                if i < num_colunas and j < num_linhas:
+                    self.textLab[i][j] = char
+
+
 
 pacman = Pacman()
 dirAtual = Direcoes.DIREITA
 lab = Labyrinth()
 
+lab.readLabFromFile()
+lab.convertTextLabIntoLogicalLab()
+
 lab.addGhost(4,4)
 
 # FIXME remover depois, somente para teste!!!
-for i in range(0,(num_colunas)):
-    for j in range(0, (num_linhas)):
-        if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
-            lab.addObstacle(i, j)
+# for i in range(0,(num_colunas)):
+#     for j in range(0, (num_linhas)):
+#         if(i == 0 or j == 0 or i+1 == num_colunas or j+1 == num_linhas):
+#             lab.addObstacle(i, j)
 
 # Loop principal
 while True:
