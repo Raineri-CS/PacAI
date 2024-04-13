@@ -18,10 +18,10 @@ B                  B
 B                  B
 B                  B
 B                  B
-B                  B
-B                  B
-B                  B
-B                  B
-B                  B
-B                  B
+B     B            B
+B     B            B
+B     B            B
+B     B            B
+B     B            B
+B     B            B
 BBBBBBBBBBBBBBBBBBBB

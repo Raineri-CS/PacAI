@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import random
 
 from pygame.locals import *
 from enum import Enum
@@ -99,13 +100,24 @@ class Ghost(Entity):
         self.velocidade = pVelocidade
         self.accumulator = 0
         self.color = color
+        self.dir = Direcoes.DIREITA
         super().__init__(x, y)
         # Redefinicao
         self.isEnemy = True
 
-    def move(self, dx, dy):
+    def move(self, dir):
         if(self.accumulator >= 1):
             self.accumulator = 0
+            dx = 0
+            dy = 0
+            if(dir == Direcoes.DIREITA):
+                dx += 1
+            elif(dir == Direcoes.ESQUERDA):
+                dx -= 1
+            elif(dir == Direcoes.BAIXO):
+                dy += 1
+            else:
+                dy -= 1
             nova_coluna = self.posX + dx
             nova_linha = self.posY + dy
             # Verifica se a nova posição está dentro do grid
@@ -129,24 +141,29 @@ class GhostGulosa(Ghost):
         super().__init__(pVelocidade,x,y,color)
         
     def update(self,pacman_coluna,pacman_linha):
-        if self.accumulator >= 1:
-            self.accumulator = 0
-            
-            dx = pacman_coluna - self.posX
-            dy = pacman_linha - self.posY
-            
-            if abs(dx) > abs(dy):
-                nova_coluna = self.posX + math.copysign(1,dx)
-                nova_linha = self.posY
-            else:
-                nova_coluna = self.posX
-                nova_linha = self.posY + math.copysign(1,dy)
-                
-            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
-                self.posX = nova_coluna
-                self.posY = nova_linha
-                
         self.accumulator += self.velocidade
+            
+        dx = pacman_coluna - self.posX
+        dy = pacman_linha - self.posY
+        
+        if abs(dx) > abs(dy):
+            nova_coluna = self.posX + math.copysign(1,dx)
+            nova_linha = self.posY
+        else:
+            nova_coluna = self.posX
+            nova_linha = self.posY + math.copysign(1,dy)
+            
+        if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+            if (self.posX - nova_coluna) < 0:
+                self.dir = Direcoes.DIREITA
+            elif (self.posX - nova_coluna) > 0:
+                self.dir = Direcoes.ESQUERDA
+            
+            if (self.posY - nova_linha) > 0:
+                self.dir = Direcoes.CIMA
+            elif (self.posY - nova_linha) < 0:
+                self.dir = Direcoes.BAIXO
+
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
         super().__init__(pPosX, pPosY)
@@ -245,6 +262,28 @@ class Labyrinth:
                     return True
             return False
     
+    def ghostCollideLookAhead(self, ghost):
+        if(ghost.dir == Direcoes.DIREITA):
+            if isinstance(self.logicalLab[ghost.posX + 1][ghost.posY], Entity):
+                if self.logicalLab[ghost.posX + 1][ghost.posY].isCollision:
+                    return True
+            return False
+        elif(ghost.dir == Direcoes.ESQUERDA):
+            if isinstance(self.logicalLab[ghost.posX - 1][ghost.posY], Entity):
+                if self.logicalLab[ghost.posX - 1][ghost.posY].isCollision:
+                    return True
+            return False
+        elif(ghost.dir == Direcoes.BAIXO):
+            if isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Entity):
+                if self.logicalLab[ghost.posX][ghost.posY + 1].isCollision:
+                    return True
+            return False
+        else:
+            if isinstance(self.logicalLab[ghost.posX][ghost.posY -1], Entity):
+                if self.logicalLab[ghost.posX][ghost.posY - 1].isCollision:
+                    return True
+            return False
+    
     def convertTextLabIntoLogicalLab(self):
         for i, line in enumerate(self.textLab):
             for j, symbol in enumerate(line):
@@ -327,9 +366,7 @@ while True:
         if not lab.collideLookAhead(dirAtual):   
             pacman.move(0,-1)
     
-    # Logica das entidades (Fantasmas)
-    # TODO
-
+    
     # Desenhar na tela
     tela.fill(preto)
     pacman.draw()
@@ -339,6 +376,9 @@ while True:
             if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
                 if isinstance(entity, Ghost):
                     entity.update(pacPosX, pacPosY)
+                    while(lab.ghostCollideLookAhead(entity)):
+                        entity.dir = random.choice(list(Direcoes))
+                    entity.move(entity.dir)
                 entity.draw()
             
     pygame.display.flip()
