@@ -172,7 +172,6 @@ class Labyrinth:
         # self.logicalLab = Ball(x, y, None)
 
     def addObstacle(self, x, y):
-        print(f"escrevendo em {x} {y}\n")
         self.textLab[x][y] = 'B'
         self.logicalLab[x][y] =  Obstacle(x, y, None)
 
@@ -202,6 +201,19 @@ class Labyrinth:
                 if self.logicalLab[pacPosX][pacPosY - 1].isCollision:
                     return True
             return False
+    
+    def convertTextLabIntoLogicalLab(self):
+        for i, line in enumerate(self.textLab):
+            for j, symbol in enumerate(line):
+                if symbol == 'o':
+                    self.addBall(i,j)
+                elif symbol == 'O':
+                    self.addSuperBall(i,j)
+                elif symbol == 'B':
+                    self.addObstacle(i,j)
+                elif symbol == 'X':
+                    self.addGhost(i,j)
+                    pass
 
 pacman = Pacman()
 dirAtual = Direcoes.DIREITA
@@ -274,7 +286,6 @@ while True:
         for entity in line:
             if(isinstance(entity, Entity)):
                 entity.draw()
-    print(f"X:{pacPosX} Y:{pacPosY}")
     pygame.display.flip()
 
     # Controle de FPS
