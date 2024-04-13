@@ -401,7 +401,9 @@ class Labyrinth:
                 elif symbol == 'X':
                     self.addGhost(i,j)
                 elif symbol == 'G':
-                    self.addGhostGulosa(i,j)   
+                    self.addGhostGulosa(i, j)   
+                elif symbol == 'S':
+                    self.addAStarGhost(i, j)
                     
     def readLabFromFile(self):
         f = open(f'{lab_index}.txt', 'r')
