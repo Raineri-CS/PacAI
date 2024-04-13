@@ -82,6 +82,7 @@ class Entity:
         self.isCollision = False
         self.isPower = False
         self.isEnemy = False
+        self.isDrawable = True
         
     def draw(self):
         pass
@@ -244,22 +245,37 @@ class Labyrinth:
                     #TODO resetar o labirinto (pacman e os fantasmas, voltar para o primerio labrinto) aqui
                     #TODO checar se o pacman esta super poderoso, se for o caso, mandar o fantasma de volta a origem
                     pass
+                elif self.logicalLab[pacPosX + 1][pacPosY].isPickup:
+                    # TODO incrementar o score aqui
+                    self.logicalLab[pacPosX + 1][pacPosY].isDrawable = False
                 
             return False
         elif(pacDir == Direcoes.ESQUERDA):
             if isinstance(self.logicalLab[pacPosX - 1][pacPosY], Entity):
                 if self.logicalLab[pacPosX - 1][pacPosY].isCollision:
                     return True
+                elif self.logicalLab[pacPosX - 1][pacPosY].isEnemy:
+                    pass
+                elif self.logicalLab[pacPosX - 1][pacPosY].isPickup:
+                    self.logicalLab[pacPosX - 1][pacPosY].isDrawable = False
             return False
         elif(pacDir == Direcoes.BAIXO):
             if isinstance(self.logicalLab[pacPosX][pacPosY + 1], Entity):
                 if self.logicalLab[pacPosX][pacPosY + 1].isCollision:
                     return True
+                elif self.logicalLab[pacPosX][pacPosY + 1].isEnemy:
+                    pass
+                elif self.logicalLab[pacPosX][pacPosY + 1].isPickup:
+                    self.logicalLab[pacPosX][pacPosY + 1].isDrawable = False
             return False
         else:
             if isinstance(self.logicalLab[pacPosX][pacPosY -1], Entity):
                 if self.logicalLab[pacPosX][pacPosY - 1].isCollision:
                     return True
+                elif self.logicalLab[pacPosX][pacPosY - 1].isEnemy:
+                    pass
+                elif self.logicalLab[pacPosX][pacPosY - 1].isPickup:
+                    self.logicalLab[pacPosX][pacPosY - 1].isDrawable = False
             return False
     
     def ghostCollideLookAhead(self, ghost):
@@ -317,8 +333,9 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
 
-lab.addGhostGulosa(10,10)
-
+lab.addGhostGulosa(11,10)
+lab.addBall(10,10)
+lab.addSuperBall(15,15)
 # Loop principal
 while True:
     for evento in pygame.event.get():
@@ -379,7 +396,8 @@ while True:
                     while(lab.ghostCollideLookAhead(entity)):
                         entity.dir = random.choice(list(Direcoes))
                     entity.move(entity.dir)
-                entity.draw()
+                if entity.isDrawable:
+                    entity.draw()
             
     pygame.display.flip()
 
