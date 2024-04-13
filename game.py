@@ -2,6 +2,7 @@ import pygame
 import sys
 import math
 import random
+import heapq
 
 from pygame.locals import *
 from enum import Enum
@@ -165,6 +166,90 @@ class GhostGulosa(Ghost):
             elif (self.posY - nova_linha) < 0:
                 self.dir = Direcoes.BAIXO
 
+
+class GhostAStar(Ghost):
+    def __init__(self, pVelocidade, x, y, color):
+        super().__init__(pVelocidade, x, y, color)
+        self.path = []
+    
+    def update(self, pacman_coluna, pacman_linha):
+        # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
+        self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha))
+        
+        # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
+        if self.path:
+            next_step = self.path.pop(0)
+            self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
+        
+        # Atualizar a movimentação
+        self.accumulator += self.velocidade
+        if self.accumulator >= 1:
+            self.accumulator = 0
+            self.move(self.dir)
+    
+    def astar_search(self, start, goal):
+        # Implementação do algoritmo A* aqui
+        
+        # Exemplo de estrutura de dados para a busca A*
+        frontier = []
+        heapq.heappush(frontier, (0, start))
+        came_from = {}
+        cost_so_far = {}
+        came_from[start] = None
+        cost_so_far[start] = 0
+        
+        while frontier:
+            current = heapq.heappop(frontier)[1]
+            
+            if current == goal:
+                break
+            
+            for next in self.get_neighbors(current):
+                new_cost = cost_so_far[current] + 1  # Custo pode ser 1 para cada passo
+                if next not in cost_so_far or new_cost < cost_so_far[next]:
+                    cost_so_far[next] = new_cost
+                    priority = new_cost + self.heuristic(goal, next)
+                    heapq.heappush(frontier, (priority, next))
+                    came_from[next] = current
+        
+        # Reconstruir o caminho
+        path = []
+        current = goal
+        while current != start:
+            path.append(current)
+            current = came_from[current]
+        path.reverse()
+        return path
+    
+    def get_neighbors(self, pos):
+        # Retornar posições vizinhas (cima, baixo, esquerda, direita)
+        # Adicionar lógica para verificar se a posição é válida (dentro do grid)
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        neighbors = []
+        for dx, dy in directions:
+            new_pos = (pos[0] + dx, pos[1] + dy)
+            # Verifica se a nova posição está dentro do grid
+            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas:
+                neighbors.append(new_pos)
+        return neighbors
+    
+    def heuristic(self, goal, next):
+        # Heurística de Manhattan
+        return abs(goal[0] - next[0]) + abs(goal[1] - next[1])
+    
+    def get_direction(self, current_x, current_y, next_x, next_y):
+        # Retorna a direção com base nas coordenadas atuais e próximas
+        if next_x > current_x:
+            return Direcoes.DIREITA
+        elif next_x < current_x:
+            return Direcoes.ESQUERDA
+        elif next_y > current_y:
+            return Direcoes.BAIXO
+        elif next_y < current_y:
+            return Direcoes.CIMA
+        return Direcoes.DIREITA
+
+
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
         super().__init__(pPosX, pPosY)
@@ -226,6 +311,10 @@ class Labyrinth:
     
     def addGhostGulosa(self, x, y):
         self.textLab[x][y] = 'G'
+        self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
+        
+    def addAStarGhost(self, x, y):
+        self.textLab[x][y] = 'S'
         self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
 
     def addObstacle(self, x, y):
@@ -332,6 +421,8 @@ lab = Labyrinth()
 
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
+
+lab.addAStarGhost(10,10)
 
 paused = False
 # Loop principal
