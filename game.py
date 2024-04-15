@@ -75,6 +75,10 @@ class Pacman:
     
     def getPosY(self):
         return self.y
+    
+    def setSpawnLoc(self, x,y):
+        self.x = x
+        self.y = y
 
 class Entity:
     def __init__(self, pPosX, pPosY):
@@ -414,7 +418,7 @@ class Labyrinth:
                     return True
             return False
     
-    def convertTextLabIntoLogicalLab(self):
+    def convertTextLabIntoLogicalLab(self, pac):
         for i, line in enumerate(self.textLab):
             for j, symbol in enumerate(line):
                 if symbol == 'o':
@@ -429,6 +433,8 @@ class Labyrinth:
                     self.addGhostGulosa(i, j)   
                 elif symbol == 'S':
                     self.addAStarGhost(i, j)
+                elif symbol == 'P':
+                    pac.setSpawnLoc(i, j)
                     
     def readLabFromFile(self):
         f = open(f'{lab_index}.txt', 'r')
@@ -449,7 +455,7 @@ dirAtual = Direcoes.DIREITA
 lab = Labyrinth()
 
 lab.readLabFromFile()
-lab.convertTextLabIntoLogicalLab()
+lab.convertTextLabIntoLogicalLab(pacman)
 
 lab.addAStarGhost(2,2)
 

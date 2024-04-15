@@ -23,5 +23,5 @@ B........BB........B
 BBBBBBBB....BBBB.B.B
 B........BBB.......B
 B.BBBB.BBBBB.BBBBB.B
-B..................B
+B........P.........B
 BBBBBBBBBBBBBBBBBBBB
