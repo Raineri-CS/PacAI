@@ -538,6 +538,8 @@ class Labyrinth:
                     self.addAStarGhost(i, j)
                 elif symbol == 'P':
                     pac.setSpawnLoc(i, j)
+                elif symbol == 'F':
+                    self.addSPFGhost(i, j)
                     
     def readLabFromFile(self):
         f = open(f'{lab_index}.txt', 'r')
