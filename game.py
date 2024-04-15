@@ -158,6 +158,18 @@ class Ghost(Entity):
         y = self.posY * tamanho_celula + self.raio
         pygame.draw.circle(tela, vermelho, (x, y), self.raio)
         
+    def translateDirectionsToCoords(self):
+        res = []
+        for entry in self.possibleMoveList:
+            if entry == Direcoes.DIREITA:
+                res.append((1,0))
+            elif entry == Direcoes.ESQUERDA:
+                res.append((-1,0))
+            elif entry == Direcoes.BAIXO:
+                res.append((0,1))
+            elif entry == Direcoes.CIMA:
+                res.append((0,-1))
+                
     def update():
         # TODO calcula o prox movimento
         pass
@@ -166,7 +178,7 @@ class GhostGulosa(Ghost):
     def __init__(self,pVelocidade,x,y,color):
         super().__init__(pVelocidade,x,y,color)
     
-    def update(self,pacman_coluna,pacman_linha):
+    def update(self,pacman_coluna,pacman_linha, lab):
         self.accumulator += self.velocidade
             
         dx = pacman_coluna - self.posX
@@ -209,7 +221,7 @@ class GhostAStar(Ghost):
         super().__init__(pVelocidade, x, y, color)
         self.path = []
     
-    def update(self, pacman_coluna, pacman_linha):
+    def update(self, pacman_coluna, pacman_linha, lab):
         # Pra diferenciar os ticks dos fantasmas
         self.accumulator += self.velocidade
         
@@ -288,7 +300,7 @@ class SPFGhost(Ghost):
     def __init__(self, pVelocidade, x, y, color):
         super(SPFGhost, self).__init__(pVelocidade, x, y, color)
     
-    def update(self, pacPosX, pacPosY):
+    def update(self, pacPosX, pacPosY, lab):
         self.accumulator += self.velocidade
         start = (self.posX, self.posY)  # Posição inicial do fantasma
         goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
@@ -311,7 +323,7 @@ class SPFGhost(Ghost):
                 break
             
             # Para cada vizinho do nó atual
-            for next_pos in self.get_neighbors(current_pos):
+            for next_pos in self.get_neighbors(current_pos, lab):
                 # Custo acumulado para o vizinho
                 new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
                 
@@ -347,15 +359,18 @@ class SPFGhost(Ghost):
             return Direcoes.CIMA
         return Direcoes.DIREITA
 
-    def get_neighbors(self, pos):
+    def get_neighbors(self, pos, lab):
         # Retornar posições vizinhas (cima, baixo, esquerda, direita)
         # Adicionar lógica para verificar se a posição é válida (dentro do grid)
         directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
         neighbors = []
+        logicalLabShallowCopy = lab.getLogicalLab()
         for dx, dy in directions:
             new_pos = (pos[0] + dx, pos[1] + dy)
+            # Verifica se na nova posiscao ha alguma colisao
+                
             # Verifica se a nova posição está dentro do grid
-            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas:
+            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas and not isinstance(logicalLabShallowCopy[new_pos[0]][new_pos[1]], Obstacle):
                 neighbors.append(new_pos)
         return neighbors
 
@@ -542,7 +557,7 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab(pacman)
 
-lab.addAStarGhost(2,2)
+lab.addSPFGhost(2,2)
 
 paused = False
 # Loop principal
@@ -601,7 +616,7 @@ while True:
                 if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
                     if isinstance(entity, Ghost):
                         entity.genPossibleMoves(lab)
-                        entity.update(pacPosX, pacPosY)
+                        entity.update(pacPosX, pacPosY, lab)
                         while(lab.ghostCollideLookAhead(entity)):
                             entity.dir = random.choice(list(Direcoes))
                         entity.move(entity.dir)
