@@ -45,6 +45,7 @@ class Direcoes(Enum):
 class Pacman:
 
     def __init__(self):
+        # TODO isso aqui assume que o pacman nasce no meio da tela, fazer ser possivel ler isso do arquivo
         self.x = num_colunas // 2
         self.y = num_linhas // 2
         self.raio = tamanho_celula // 2
@@ -106,6 +107,22 @@ class Ghost(Entity):
         super().__init__(x, y)
         # Redefinicao
         self.isEnemy = True
+        self.possibleMoveList = []
+    
+    def genPossibleMoves(self, lab):
+        # Limpa a lista de movimentos possiveis sem colisao
+        self.possibleMoveList.clear()
+        
+        logicalLabShallowCopy = lab.getLogicalLab()
+        # Se a proxima posicao em cada uma das 4 possibilidades nao estivar ocupada por um obstaculo, adicionar na lista
+        if(not isinstance(logicalLabShallowCopy[self.posX + 1][self.posY],Obstacle)):
+            self.possibleMoveList.append(Direcoes.DIREITA)
+        elif (not isinstance(logicalLabShallowCopy[self.posX - 1][self.posY],Obstacle)):
+            self.possibleMoveList.append(Direcoes.ESQUERDA)
+        elif (not isinstance(logicalLabShallowCopy[self.posX][self.posY + 1],Obstacle)):
+            self.possibleMoveList.append(Direcoes.BAIXO)
+        elif (not isinstance(logicalLabShallowCopy[self.posX][self.posY - 1],Obstacle)):
+            self.possibleMoveList.append(Direcoes.CIMA)
 
     def move(self, dir):
         if(self.accumulator >= 1):
@@ -141,7 +158,7 @@ class Ghost(Entity):
 class GhostGulosa(Ghost):
     def __init__(self,pVelocidade,x,y,color):
         super().__init__(pVelocidade,x,y,color)
-        
+    
     def update(self,pacman_coluna,pacman_linha):
         self.accumulator += self.velocidade
             
@@ -415,6 +432,8 @@ class Labyrinth:
                 if i < num_colunas and j < num_linhas:
                     self.textLab[i][j] = char
 
+    def getLogicalLab(self):
+        return self.logicalLab
 
 
 pacman = Pacman()
@@ -482,6 +501,7 @@ while True:
             for entity in line:
                 if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
                     if isinstance(entity, Ghost):
+                        entity.genPossibleMoves(lab)
                         entity.update(pacPosX, pacPosY)
                         while(lab.ghostCollideLookAhead(entity)):
                             entity.dir = random.choice(list(Direcoes))
