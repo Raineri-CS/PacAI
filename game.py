@@ -117,11 +117,11 @@ class Ghost(Entity):
         # Se a proxima posicao em cada uma das 4 possibilidades nao estivar ocupada por um obstaculo, adicionar na lista
         if(not isinstance(logicalLabShallowCopy[self.posX + 1][self.posY],Obstacle)):
             self.possibleMoveList.append(Direcoes.DIREITA)
-        elif (not isinstance(logicalLabShallowCopy[self.posX - 1][self.posY],Obstacle)):
+        if (not isinstance(logicalLabShallowCopy[self.posX - 1][self.posY],Obstacle)):
             self.possibleMoveList.append(Direcoes.ESQUERDA)
-        elif (not isinstance(logicalLabShallowCopy[self.posX][self.posY + 1],Obstacle)):
+        if (not isinstance(logicalLabShallowCopy[self.posX][self.posY + 1],Obstacle)):
             self.possibleMoveList.append(Direcoes.BAIXO)
-        elif (not isinstance(logicalLabShallowCopy[self.posX][self.posY - 1],Obstacle)):
+        if (not isinstance(logicalLabShallowCopy[self.posX][self.posY - 1],Obstacle)):
             self.possibleMoveList.append(Direcoes.CIMA)
 
     def move(self, dir):
@@ -165,23 +165,36 @@ class GhostGulosa(Ghost):
         dx = pacman_coluna - self.posX
         dy = pacman_linha - self.posY
         
-        if abs(dx) > abs(dy):
-            nova_coluna = self.posX + math.copysign(1,dx)
-            nova_linha = self.posY
+        # Adicionando entropia pra fazer o fantasma ser imprevisivel
+        # NOTE explicar isso na apresentacao
+        # 1% de chance do fantasma fazer o movimento "Errado"
+        if random.random() < 0.01:
+            self.dir = random.choice(self.possibleMoveList)
         else:
-            nova_coluna = self.posX
-            nova_linha = self.posY + math.copysign(1,dy)
-            
-        if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
-            if (self.posX - nova_coluna) < 0:
-                self.dir = Direcoes.DIREITA
-            elif (self.posX - nova_coluna) > 0:
-                self.dir = Direcoes.ESQUERDA
-            
-            if (self.posY - nova_linha) > 0:
-                self.dir = Direcoes.CIMA
-            elif (self.posY - nova_linha) < 0:
-                self.dir = Direcoes.BAIXO
+            if abs(dx) > abs(dy):
+                nova_coluna = self.posX + math.copysign(1,dx)
+                nova_linha = self.posY
+            else:
+                nova_coluna = self.posX
+                nova_linha = self.posY + math.copysign(1,dy)
+
+            # Pra nao precisar recalcular...
+            nDx = self.posX - nova_coluna
+            nDy = self.posY - nova_linha
+
+            if 0 <= nova_coluna < num_colunas and 0 <= nova_linha < num_linhas:
+                if nDx < 0 and Direcoes.DIREITA in self.possibleMoveList:
+                    self.dir = Direcoes.DIREITA
+                elif nDx > 0 and Direcoes.ESQUERDA in self.possibleMoveList:
+                    self.dir = Direcoes.ESQUERDA
+
+                if nDy > 0 and Direcoes.CIMA in self.possibleMoveList:
+                    self.dir = Direcoes.CIMA
+                elif nDy < 0 and Direcoes.BAIXO in self.possibleMoveList:
+                    self.dir = Direcoes.BAIXO
+
+            if self.dir not in self.possibleMoveList:
+                self.dir = random.choice(self.possibleMoveList)
 
 
 class GhostAStar(Ghost):
@@ -443,7 +456,7 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
 
-lab.addAStarGhost(10,10)
+lab.addGhostGulosa(2,2)
 
 paused = False
 # Loop principal
