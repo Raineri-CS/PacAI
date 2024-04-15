@@ -28,8 +28,6 @@ vermelho = (255, 0, 0)
 
 #TODO fazer a funcao de reset
 
-# Indice do laboratorio, incrementa conforme os niveis sobem
-lab_index = 1
 
 # Tamanho do grid 
 tamanho_celula = 30
@@ -238,7 +236,7 @@ class GhostAStar(Ghost):
             self.velocidade = self.velocidadeBase + (self.velocidadeBase * (superBallDiff * self.superBallMultiplier)) + (self.velocidadeBase * (normalBallDiff * self.normalBallMultiplier))
         
         # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
-        self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha))
+        self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha), lab)
         
         # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
         if self.path:
@@ -246,7 +244,7 @@ class GhostAStar(Ghost):
             self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
         
     
-    def astar_search(self, start, goal):
+    def astar_search(self, start, goal, lab):
         # Implementação do algoritmo A* aqui
         
         # Exemplo de estrutura de dados para a busca A*
@@ -574,11 +572,10 @@ class Labyrinth:
                 elif symbol == ' ':
                     self.logicalLab[i][j] = ' '
                     
-    def readLabFromFile(self):
+    def readLabFromFile(self, lab_index):
         f = open(f'{lab_index}.txt', 'r')
 
         data = f.readlines()
-
         for i, line in enumerate(data):
             for j, char in enumerate(line):
                 if i < num_colunas and j < num_linhas:
@@ -591,16 +588,19 @@ class Labyrinth:
         self.__init__()
 
 
-def __main__():
+def main():
+    # Indice do laboratorio, incrementa conforme os niveis sobem
+    lab_index = 1
     pacman = Pacman()
     dirAtual = Direcoes.DIREITA
     lab = Labyrinth()
 
-    lab.readLabFromFile()
+    lab.readLabFromFile(lab_index)
     lab.convertTextLabIntoLogicalLab(pacman)
     lab.totalBallAmount = lab.normalBallAmount
     lab.totalSuperBallAmount = lab.superBallAmount
 
+    
     paused = False
     dead = False
     # Loop principal
@@ -614,37 +614,46 @@ def __main__():
                     pygame.quit()
                     sys.exit()
                 elif(evento.key == K_SPACE):
+                    if dead:
+                        dead = not dead
                     paused = not paused
                 elif(evento.key == K_1):
                     lab.reset()
                     lab_index = 1
-                    lab.readLabFromFile()
+                    lab.readLabFromFile(lab_index)
                     lab.convertTextLabIntoLogicalLab(pacman)
                     lab.totalBallAmount = lab.normalBallAmount
                     lab.totalSuperBallAmount = lab.superBallAmount
+                    lab.pacPosX = pacman.x
+                    lab.pacPosY = pacman.y
                 elif(evento.key == K_2):
                     lab.reset()
                     lab_index = 2
-                    lab.readLabFromFile()
+                    lab.readLabFromFile(lab_index)
                     lab.convertTextLabIntoLogicalLab(pacman)
                     lab.totalBallAmount = lab.normalBallAmount
                     lab.totalSuperBallAmount = lab.superBallAmount
+                    lab.pacPosX = pacman.x
+                    lab.pacPosY = pacman.y
                 elif(evento.key == K_3):
                     lab.reset()
                     lab_index = 3
-                    lab.readLabFromFile()
+                    lab.readLabFromFile(lab_index)
                     lab.convertTextLabIntoLogicalLab(pacman)
                     lab.totalBallAmount = lab.normalBallAmount
                     lab.totalSuperBallAmount = lab.superBallAmount
+                    lab.pacPosX = pacman.x
+                    lab.pacPosY = pacman.y
 
 
 
         if not paused:
             if dead:
                 # Volta para o primeiro nivel
+                dead = False
                 lab.reset()
                 lab_index = 1
-                lab.readLabFromFile()
+                lab.readLabFromFile(lab_index)
                 lab.convertTextLabIntoLogicalLab(pacman)
                 lab.totalBallAmount = lab.normalBallAmount
                 lab.totalSuperBallAmount = lab.superBallAmount
@@ -682,14 +691,12 @@ def __main__():
             # Se o acumulador virou zero, quer dizer que se mexeu
             if(pacman.accumulator == 0):
                 pacMove = True
+                lab.pacPosX = pacman.x
+                lab.pacPosY = pacman.y
         
             # Desenhar na tela
             tela.fill(preto)
             pacman.draw()
-
-            if pacMove:
-                lab.pacPosX = pacman.x
-                lab.pacPosY = pacman.y
 
             for line in lab.logicalLab:
                 for entity in line:
@@ -734,3 +741,6 @@ def __main__():
 
         # Controle de FPS
         pygame.time.Clock().tick(60)
+        
+if __name__ == '__main__':
+    main()
