@@ -16,6 +16,9 @@ largura, altura = 810, 600
 tela = pygame.display.set_mode((largura, altura))
 pygame.display.set_caption("Pac-Man Clone")
 
+# Criar uma fonte de texto (tamanho 48)
+fonte = pygame.font.Font(None, 48)
+
 # Cores
 preto = (0, 0, 0)
 amarelo = (255, 255, 0)
@@ -523,7 +526,14 @@ while True:
                     if entity.isDrawable:
                         entity.draw()
     else:
-        tela.fill(vermelho)
+        s = pygame.Surface((largura, altura))
+        s.set_alpha(2)
+        s.fill((30,30,30))
+        tela.blit(s,(0,0))
+        text_surface = fonte.render("PAUSE", True, branco)
+        tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
+        # tela.fill(vermelho)
+        
         
     pygame.display.flip()
 
