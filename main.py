@@ -94,6 +94,7 @@ class Entity:
         self.isDrawable = True
         # NOTE esse atributo eh para que seja possivel desenhar os pickups no mesmo quadro em que sejam pegos, para que nao sejam deletados antes
         self.toBePicked = False
+        self.toKillPlayer = False
         
     def draw(self):
         pass
@@ -117,6 +118,7 @@ class Ghost(Entity):
         # Redefinicao
         self.isEnemy = True
         self.possibleMoveList = []
+        self.origin = (0,0)
     
     def genPossibleMoves(self, lab):
         # Limpa a lista de movimentos possiveis sem colisao
@@ -452,18 +454,22 @@ class Labyrinth:
     def addGhost(self, x, y):
         self.textLab[x][y] = 'X'
         self.logicalLab[x][y] = Ghost(0.05, x, y, None)
-    
+        self.origin = (x, y)
+        
     def addGhostGulosa(self, x, y):
         self.textLab[x][y] = 'G'
         self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
+        self.origin = (x, y)
         
     def addAStarGhost(self, x, y):
         self.textLab[x][y] = 'S'
         self.logicalLab[x][y] = GhostAStar(0.05, x, y, vermelho)
+        self.origin = (x, y)
 
     def addSPFGhost(self, x, y):
         self.textLab[x][y] = 'S'
         self.logicalLab[x][y] = SPFGhost(0.05, x, y, None)
+        self.origin = (x, y)
 
     def addObstacle(self, x, y):
         self.textLab[x][y] = 'B'
@@ -479,11 +485,9 @@ class Labyrinth:
                 if self.logicalLab[self.pacPosX + 1][self.pacPosY].isCollision:
                     return True
                 elif self.logicalLab[self.pacPosX + 1][self.pacPosY].isEnemy:
-                    #TODO resetar o labirinto (pacman e os fantasmas, voltar para o primerio labrinto) aqui
-                    #TODO checar se o pacman esta super poderoso, se for o caso, mandar o fantasma de volta a origem
+                    self.logicalLab[self.pacPosX + 1][self.pacPosY].toKillPlayer = True
                     pass
                 elif self.logicalLab[self.pacPosX + 1][self.pacPosY].isPickup:
-                    # TODO incrementar o score aqui
                     self.logicalLab[self.pacPosX + 1][self.pacPosY].toBePicked = True
                 
             return False
@@ -492,6 +496,7 @@ class Labyrinth:
                 if self.logicalLab[self.pacPosX - 1][self.pacPosY].isCollision:
                     return True
                 elif self.logicalLab[self.pacPosX - 1][self.pacPosY].isEnemy:
+                    self.logicalLab[self.pacPosX - 1][self.pacPosY].toKillPlayer = True
                     pass
                 elif self.logicalLab[self.pacPosX - 1][self.pacPosY].isPickup:
                     self.logicalLab[self.pacPosX - 1][self.pacPosY].toBePicked = True
@@ -501,6 +506,7 @@ class Labyrinth:
                 if self.logicalLab[self.pacPosX][self.pacPosY + 1].isCollision:
                     return True
                 elif self.logicalLab[self.pacPosX][self.pacPosY + 1].isEnemy:
+                    self.logicalLab[self.pacPosX][self.pacPosY + 1].toKillPlayer = True
                     pass
                 elif self.logicalLab[self.pacPosX][self.pacPosY + 1].isPickup:
                     self.logicalLab[self.pacPosX][self.pacPosY + 1].toBePicked = True
@@ -510,6 +516,7 @@ class Labyrinth:
                 if self.logicalLab[self.pacPosX][self.pacPosY - 1].isCollision:
                     return True
                 elif self.logicalLab[self.pacPosX][self.pacPosY - 1].isEnemy:
+                    self.logicalLab[self.pacPosX][self.pacPosY - 1].toKillPlayer = True
                     pass
                 elif self.logicalLab[self.pacPosX][self.pacPosY - 1].isPickup:
                     self.logicalLab[self.pacPosX][self.pacPosY - 1].toBePicked = True
@@ -520,21 +527,29 @@ class Labyrinth:
             if isinstance(self.logicalLab[ghost.posX + 1][ghost.posY], Entity):
                 if self.logicalLab[ghost.posX + 1][ghost.posY].isCollision:
                     return True
+            elif isinstance(self.logicalLab[ghost.posX + 1][ghost.posY], Pacman):
+                self.toKillPlayer = True
             return False
         elif(ghost.dir == Direcoes.ESQUERDA):
             if isinstance(self.logicalLab[ghost.posX - 1][ghost.posY], Entity):
                 if self.logicalLab[ghost.posX - 1][ghost.posY].isCollision:
                     return True
+            elif isinstance(self.logicalLab[ghost.posX - 1][ghost.posY], Pacman):
+                self.toKillPlayer = True
             return False
         elif(ghost.dir == Direcoes.BAIXO):
             if isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Entity):
                 if self.logicalLab[ghost.posX][ghost.posY + 1].isCollision:
                     return True
+            elif isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Pacman):
+                self.toKillPlayer = True
             return False
         else:
-            if isinstance(self.logicalLab[ghost.posX][ghost.posY -1], Entity):
+            if isinstance(self.logicalLab[ghost.posX][ghost.posY - 1], Entity):
                 if self.logicalLab[ghost.posX][ghost.posY - 1].isCollision:
                     return True
+            elif isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Pacman):
+                self.toKillPlayer = True
             return False
     
     def convertTextLabIntoLogicalLab(self, pac):
@@ -576,124 +591,146 @@ class Labyrinth:
         self.__init__()
 
 
-pacman = Pacman()
-dirAtual = Direcoes.DIREITA
-lab = Labyrinth()
+def __main__():
+    pacman = Pacman()
+    dirAtual = Direcoes.DIREITA
+    lab = Labyrinth()
 
-lab.readLabFromFile()
-lab.convertTextLabIntoLogicalLab(pacman)
-lab.totalBallAmount = lab.normalBallAmount
-lab.totalSuperBallAmount = lab.superBallAmount
+    lab.readLabFromFile()
+    lab.convertTextLabIntoLogicalLab(pacman)
+    lab.totalBallAmount = lab.normalBallAmount
+    lab.totalSuperBallAmount = lab.superBallAmount
 
-paused = False
-# Loop principal
-while True:
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        elif evento.type == KEYDOWN:
-            if(evento.key == K_q or evento.key == K_ESCAPE):
+    paused = False
+    dead = False
+    # Loop principal
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif(evento.key == K_SPACE):
-                paused = not paused
-            elif(evento.key == K_1):
+            elif evento.type == KEYDOWN:
+                if(evento.key == K_q or evento.key == K_ESCAPE):
+                    pygame.quit()
+                    sys.exit()
+                elif(evento.key == K_SPACE):
+                    paused = not paused
+                elif(evento.key == K_1):
+                    lab.reset()
+                    lab_index = 1
+                    lab.readLabFromFile()
+                    lab.convertTextLabIntoLogicalLab(pacman)
+                    lab.totalBallAmount = lab.normalBallAmount
+                    lab.totalSuperBallAmount = lab.superBallAmount
+                elif(evento.key == K_2):
+                    lab.reset()
+                    lab_index = 2
+                    lab.readLabFromFile()
+                    lab.convertTextLabIntoLogicalLab(pacman)
+                    lab.totalBallAmount = lab.normalBallAmount
+                    lab.totalSuperBallAmount = lab.superBallAmount
+                elif(evento.key == K_3):
+                    lab.reset()
+                    lab_index = 3
+                    lab.readLabFromFile()
+                    lab.convertTextLabIntoLogicalLab(pacman)
+                    lab.totalBallAmount = lab.normalBallAmount
+                    lab.totalSuperBallAmount = lab.superBallAmount
+
+
+
+        if not paused:
+            if dead:
+                # Volta para o primeiro nivel
                 lab.reset()
                 lab_index = 1
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
                 lab.totalBallAmount = lab.normalBallAmount
                 lab.totalSuperBallAmount = lab.superBallAmount
-            elif(evento.key == K_2):
-                lab.reset()
-                lab_index = 2
-                lab.readLabFromFile()
-                lab.convertTextLabIntoLogicalLab(pacman)
-                lab.totalBallAmount = lab.normalBallAmount
-                lab.totalSuperBallAmount = lab.superBallAmount
-            elif(evento.key == K_3):
-                lab.reset()
-                lab_index = 3
-                lab.readLabFromFile()
-                lab.convertTextLabIntoLogicalLab(pacman)
-                lab.totalBallAmount = lab.normalBallAmount
-                lab.totalSuperBallAmount = lab.superBallAmount
-
             
+            # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
+            # Logica do player (pacman)
+            teclas = pygame.key.get_pressed()
 
-    if not paused:
-        # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
-        # Logica do player (pacman)
-        teclas = pygame.key.get_pressed()
+            # Usando essa varaivel pois o pacman se move sozinho
+            if(teclas[pygame.K_RIGHT]):
+                dirAtual = Direcoes.DIREITA
+            elif(teclas[pygame.K_LEFT]):
+                dirAtual = Direcoes.ESQUERDA
+            elif(teclas[pygame.K_DOWN]):
+                dirAtual = Direcoes.BAIXO
+            elif(teclas[pygame.K_UP]):
+                dirAtual = Direcoes.CIMA
 
-        # Usando essa varaivel pois o pacman se move sozinho
-        if(teclas[pygame.K_RIGHT]):
-            dirAtual = Direcoes.DIREITA
-        elif(teclas[pygame.K_LEFT]):
-            dirAtual = Direcoes.ESQUERDA
-        elif(teclas[pygame.K_DOWN]):
-            dirAtual = Direcoes.BAIXO
-        elif(teclas[pygame.K_UP]):
-            dirAtual = Direcoes.CIMA
+            pacMove = False
+            ghostMove = False
+            
+            if(dirAtual == Direcoes.DIREITA):
+                if not lab.collideLookAhead(dirAtual):   
+                    pacman.move(1,0)
+            elif(dirAtual == Direcoes.ESQUERDA):
+                if not lab.collideLookAhead(dirAtual):   
+                    pacman.move(-1,0)
+            elif(dirAtual == Direcoes.BAIXO):
+                if not lab.collideLookAhead(dirAtual):   
+                    pacman.move(0,1)
+            else:
+                if not lab.collideLookAhead(dirAtual):   
+                    pacman.move(0,-1)
 
-        pacMove = False
+            # Se o acumulador virou zero, quer dizer que se mexeu
+            if(pacman.accumulator == 0):
+                pacMove = True
+        
+            # Desenhar na tela
+            tela.fill(preto)
+            pacman.draw()
 
-        if(dirAtual == Direcoes.DIREITA):
-            if not lab.collideLookAhead(dirAtual):   
-                pacman.move(1,0)
-        elif(dirAtual == Direcoes.ESQUERDA):
-            if not lab.collideLookAhead(dirAtual):   
-                pacman.move(-1,0)
-        elif(dirAtual == Direcoes.BAIXO):
-            if not lab.collideLookAhead(dirAtual):   
-                pacman.move(0,1)
+            if pacMove:
+                lab.pacPosX = pacman.x
+                lab.pacPosY = pacman.y
+
+            for line in lab.logicalLab:
+                for entity in line:
+                    if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
+                        if isinstance(entity, Ghost):
+                            entity.genPossibleMoves(lab)
+                            entity.update(pacman.x, pacman.y, lab)
+                            # NOTE mecanismo de unstuck
+                            while(lab.ghostCollideLookAhead(entity)):
+                                entity.dir = random.choice(list(Direcoes))
+                            entity.move(entity.dir)
+                            if entity.accumulator == 0:
+                                ghostMove = True
+                        if entity.isDrawable:
+                            entity.draw()
+                            if (entity.toBePicked or (entity.toKillPlayer and ghostMove)) and pacMove:
+                                if pacman.x == entity.posX and pacman.y == entity.posY:
+                                    if isinstance(entity, Ball):
+                                        lab.normalBallAmount -= 1
+                                    elif isinstance(entity, SuperBall):
+                                        lab.superBallAmount -= 1
+                                    elif isinstance(entity, Ghost):
+                                        ghostMove = False
+                                        dead = True
+                                        paused = True
+                                        pass
+                                    entity.isDrawable = False
+                                entity.toBePicked = False
         else:
-            if not lab.collideLookAhead(dirAtual):   
-                pacman.move(0,-1)
+            s = pygame.Surface((largura, altura))
+            s.set_alpha(2)
+            s.fill((30,30,30))
+            tela.blit(s,(0,0))
+            if dead:
+                text_surface = fonte.render("MORREU", True, branco)
+            else:
+                text_surface = fonte.render("PAUSE", True, branco)
+            tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
+            
+            
+        pygame.display.flip()
 
-        # Se o acumulador virou zero, quer dizer que se mexeu
-        if(pacman.accumulator == 0):
-            pacMove = True
-    
-        # Desenhar na tela
-        tela.fill(preto)
-        pacman.draw()
-
-        if pacMove:
-            lab.pacPosX = pacman.x
-            lab.pacPosY = pacman.y
-
-        for line in lab.logicalLab:
-            for entity in line:
-                if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
-                    if isinstance(entity, Ghost):
-                        entity.genPossibleMoves(lab)
-                        entity.update(pacman.x, pacman.y, lab)
-                        # NOTE mecanismo de unstuck
-                        while(lab.ghostCollideLookAhead(entity)):
-                            entity.dir = random.choice(list(Direcoes))
-                        entity.move(entity.dir)
-                    if entity.isDrawable:
-                        entity.draw()
-                        if entity.toBePicked and pacMove:
-                            if pacman.x == entity.posX and pacman.y == entity.posY:
-                                if isinstance(entity, Ball):
-                                    lab.normalBallAmount -= 1
-                                elif isinstance(entity, SuperBall):
-                                    lab.superBallAmount -= 1
-                                entity.isDrawable = False
-                            entity.toBePicked = False
-    else:
-        s = pygame.Surface((largura, altura))
-        s.set_alpha(2)
-        s.fill((30,30,30))
-        tela.blit(s,(0,0))
-        text_surface = fonte.render("PAUSE", True, branco)
-        tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
-        
-        
-    pygame.display.flip()
-
-    # Controle de FPS
-    pygame.time.Clock().tick(60)
+        # Controle de FPS
+        pygame.time.Clock().tick(60)
