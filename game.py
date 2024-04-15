@@ -562,6 +562,9 @@ class Labyrinth:
 
     def getLogicalLab(self):
         return self.logicalLab
+    
+    def reset(self):
+        self.__init__()
 
 
 pacman = Pacman()
@@ -586,14 +589,17 @@ while True:
             elif(evento.key == K_SPACE):
                 paused = not paused
             elif(evento.key == K_1):
+                lab.reset()
                 lab_index = 1
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
             elif(evento.key == K_2):
+                lab.reset()
                 lab_index = 2
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
             elif(evento.key == K_3):
+                lab.reset()
                 lab_index = 3
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
@@ -601,7 +607,6 @@ while True:
             
 
     if not paused:
-        
         # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
         # Logica do player (pacman)
         teclas = pygame.key.get_pressed()
@@ -670,7 +675,6 @@ while True:
         tela.blit(s,(0,0))
         text_surface = fonte.render("PAUSE", True, branco)
         tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
-        # tela.fill(vermelho)
         
         
     pygame.display.flip()
