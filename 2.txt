@@ -1,26 +1,26 @@
 BBBBBBBBBBBBBBBBBBBB
 B     BBBBBBBBB   BB
-B BBB B      BBB...B
-B BBB B BBBB BBB ..B
-B      BBBB B    ..B
-B BBBBBBB B BBB .BBB
+B BBB B      BBBoooB
+B BBB B BBBB BBB ooB
+B      BBBB B    ooB
+B BBBBBBB B BBB oBBB
 B      B  B BBB   BB
 B BBBB B  B BBB   BB
 B BBB  BBBB BBB   BB
 B BB BBBBBB BBB   BB
 B B   BBB   BBB  BBB
-B BBB BBBBB BBBB ..B
-B..BBB.BBBBB.BBB...B
-B......B...B.......B
-B..BBB.B.....BBB...B
-B..BBB.B...B.......B
-B..BBB.BBBBB.BBBBB.B
-B........B.....B...B
-B..B...BBBBBB....BBB
-B.BBB..........BBBBB
+B BBB BBBBB BBBB ooB
+BooBBBoBBBBBoBBBoooB
+BooooooBoooBoooooooB
+BooBBBoBoooooBBBoooB
+BooBBBoBoooBoooooooB
+BooBBBoBBBBBoBBBBBoB
+BooooooooBoooooBoooB
+BooBoooBBBBBBooooBBB
+BoBBBooooooooooBBBBB
 B BBB BBBBB BBBB BBB
 B BBB BBBBB BBBB BBB
-B     BBBBB     .BBB
+B     BBBBB     oBBB
 B BBB BBBBBBBB BBBBB
 B BBB BBBBBBBB BBBBB
 B                BBB

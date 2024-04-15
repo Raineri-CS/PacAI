@@ -10,18 +10,18 @@ B BBB  BBBB BBB BBBB
 B BB BBBBBB BBB BBBB
 B B   BBB   BBB BBBB
 B BBB BBBBB BBBB BBB
-B..BBB.BBBBB.BBB...B
-B......B...B.......B
-B..BBB.B.....BBB...B
-B..BBB.B...B.......B
-B..BBB.BBBBB.BBBBB.B
-B........B.....B...B
+BooBBBoBBBBBoBBBoooB
+BooooooBoooBoooooooB
+BooBBBoBoooooBBBoooB
+BooBBBoBoooBoooooooB
+BooBBBoBBBBBoBBBBBoB
+BooooooooBoooooBoooB
 B BBB BBBBBBBB BBBBB
 B                BBB
 BBBBBBBBBB BBBBBBBBB
 B                BBB
 B BBBB BBBB BBBB BBB
-B BBBB BBBB BBBB ..B
-B     BBBBBBB    ..B
-BB.................B
+B BBBB BBBB BBBB ooB
+B     BBBBBBB    ooB
+BBoooooooooooooooooB
 BBBBBBBBBBBBBBBBBBBB
