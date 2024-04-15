@@ -211,11 +211,6 @@ class GhostAStar(Ghost):
             next_step = self.path.pop(0)
             self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
         
-        # Atualizar a movimentação
-        self.accumulator += self.velocidade
-        if self.accumulator >= 1:
-            self.accumulator = 0
-            self.move(self.dir)
     
     def astar_search(self, start, goal):
         # Implementação do algoritmo A* aqui
@@ -456,7 +451,7 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab()
 
-lab.addGhostGulosa(2,2)
+lab.addAStarGhost(2,2)
 
 paused = False
 # Loop principal
