@@ -92,6 +92,8 @@ class Entity:
         self.isPower = False
         self.isEnemy = False
         self.isDrawable = True
+        # NOTE esse atributo eh para que seja possivel desenhar os pickups no mesmo quadro em que sejam pegos, para que nao sejam deletados antes
+        self.toBePicked = False
         
     def draw(self):
         pass
@@ -459,44 +461,44 @@ class Labyrinth:
     
     def collideLookAhead(self, pacDir):
         if(pacDir == Direcoes.DIREITA):
-            if isinstance(self.logicalLab[pacPosX + 1][pacPosY], Entity):
-                if self.logicalLab[pacPosX + 1][pacPosY].isCollision:
+            if isinstance(self.logicalLab[self.pacPosX + 1][self.pacPosY], Entity):
+                if self.logicalLab[self.pacPosX + 1][self.pacPosY].isCollision:
                     return True
-                elif self.logicalLab[pacPosX + 1][pacPosY].isEnemy:
+                elif self.logicalLab[self.pacPosX + 1][self.pacPosY].isEnemy:
                     #TODO resetar o labirinto (pacman e os fantasmas, voltar para o primerio labrinto) aqui
                     #TODO checar se o pacman esta super poderoso, se for o caso, mandar o fantasma de volta a origem
                     pass
-                elif self.logicalLab[pacPosX + 1][pacPosY].isPickup:
+                elif self.logicalLab[self.pacPosX + 1][self.pacPosY].isPickup:
                     # TODO incrementar o score aqui
-                    self.logicalLab[pacPosX + 1][pacPosY].isDrawable = False
+                    self.logicalLab[self.pacPosX + 1][self.pacPosY].toBePicked = True
                 
             return False
         elif(pacDir == Direcoes.ESQUERDA):
-            if isinstance(self.logicalLab[pacPosX - 1][pacPosY], Entity):
-                if self.logicalLab[pacPosX - 1][pacPosY].isCollision:
+            if isinstance(self.logicalLab[self.pacPosX - 1][self.pacPosY], Entity):
+                if self.logicalLab[self.pacPosX - 1][self.pacPosY].isCollision:
                     return True
-                elif self.logicalLab[pacPosX - 1][pacPosY].isEnemy:
+                elif self.logicalLab[self.pacPosX - 1][self.pacPosY].isEnemy:
                     pass
-                elif self.logicalLab[pacPosX - 1][pacPosY].isPickup:
-                    self.logicalLab[pacPosX - 1][pacPosY].isDrawable = False
+                elif self.logicalLab[self.pacPosX - 1][self.pacPosY].isPickup:
+                    self.logicalLab[self.pacPosX - 1][self.pacPosY].toBePicked = True
             return False
         elif(pacDir == Direcoes.BAIXO):
-            if isinstance(self.logicalLab[pacPosX][pacPosY + 1], Entity):
-                if self.logicalLab[pacPosX][pacPosY + 1].isCollision:
+            if isinstance(self.logicalLab[self.pacPosX][self.pacPosY + 1], Entity):
+                if self.logicalLab[self.pacPosX][self.pacPosY + 1].isCollision:
                     return True
-                elif self.logicalLab[pacPosX][pacPosY + 1].isEnemy:
+                elif self.logicalLab[self.pacPosX][self.pacPosY + 1].isEnemy:
                     pass
-                elif self.logicalLab[pacPosX][pacPosY + 1].isPickup:
-                    self.logicalLab[pacPosX][pacPosY + 1].isDrawable = False
+                elif self.logicalLab[self.pacPosX][self.pacPosY + 1].isPickup:
+                    self.logicalLab[self.pacPosX][self.pacPosY + 1].toBePicked = True
             return False
         else:
-            if isinstance(self.logicalLab[pacPosX][pacPosY -1], Entity):
-                if self.logicalLab[pacPosX][pacPosY - 1].isCollision:
+            if isinstance(self.logicalLab[self.pacPosX][self.pacPosY -1], Entity):
+                if self.logicalLab[self.pacPosX][self.pacPosY - 1].isCollision:
                     return True
-                elif self.logicalLab[pacPosX][pacPosY - 1].isEnemy:
+                elif self.logicalLab[self.pacPosX][self.pacPosY - 1].isEnemy:
                     pass
-                elif self.logicalLab[pacPosX][pacPosY - 1].isPickup:
-                    self.logicalLab[pacPosX][pacPosY - 1].isDrawable = False
+                elif self.logicalLab[self.pacPosX][self.pacPosY - 1].isPickup:
+                    self.logicalLab[self.pacPosX][self.pacPosY - 1].toBePicked = True
             return False
     
     def ghostCollideLookAhead(self, ghost):
@@ -594,9 +596,7 @@ while True:
         elif(teclas[pygame.K_UP]):
             dirAtual = Direcoes.CIMA
 
-        # TODO talvez mudar isso? Fiz por eficiencia em testar    
-        pacPosX = pacman.getPosX()
-        pacPosY = pacman.getPosY()
+        pacMove = False
 
         if(dirAtual == Direcoes.DIREITA):
             if not lab.collideLookAhead(dirAtual):   
@@ -611,22 +611,34 @@ while True:
             if not lab.collideLookAhead(dirAtual):   
                 pacman.move(0,-1)
 
+        # Se o acumulador virou zero, quer dizer que se mexeu
+        if(pacman.accumulator == 0):
+            pacMove = True
     
         # Desenhar na tela
         tela.fill(preto)
         pacman.draw()
+
+        if pacMove:
+            lab.pacPosX = pacman.x
+            lab.pacPosY = pacman.y
 
         for line in lab.logicalLab:
             for entity in line:
                 if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
                     if isinstance(entity, Ghost):
                         entity.genPossibleMoves(lab)
-                        entity.update(pacPosX, pacPosY, lab)
+                        entity.update(pacman.x, pacman.y, lab)
+                        # NOTE mecanismo de unstuck
                         while(lab.ghostCollideLookAhead(entity)):
                             entity.dir = random.choice(list(Direcoes))
                         entity.move(entity.dir)
                     if entity.isDrawable:
                         entity.draw()
+                        if entity.toBePicked and pacMove:
+                            if pacman.x == entity.posX and pacman.y == entity.posY:
+                                entity.isDrawable = False
+                            entity.toBePicked = False
     else:
         s = pygame.Surface((largura, altura))
         s.set_alpha(2)
