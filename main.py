@@ -713,7 +713,7 @@ def main():
                         if entity.isDrawable:
                             entity.draw()
                             #TODO ARRUMAR ISSO
-                            if (entity.toBePicked or (entity.toKillPlayer and ghostMove)) and pacMove:
+                            if (entity.toBePicked or (entity.toKillPlayer or ghostMove)) or pacMove:
                                 if pacman.x == entity.posX and pacman.y == entity.posY:
                                     if isinstance(entity, Ball):
                                         lab.normalBallAmount -= 1
