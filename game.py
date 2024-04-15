@@ -210,6 +210,9 @@ class GhostAStar(Ghost):
         self.path = []
     
     def update(self, pacman_coluna, pacman_linha):
+        # Pra diferenciar os ticks dos fantasmas
+        self.accumulator += self.velocidade
+        
         # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
         self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha))
         
@@ -281,6 +284,81 @@ class GhostAStar(Ghost):
             return Direcoes.CIMA
         return Direcoes.DIREITA
 
+class SPFGhost(Ghost):
+    def __init__(self, pVelocidade, x, y, color):
+        super(SPFGhost, self).__init__(pVelocidade, x, y, color)
+    
+    def update(self, pacPosX, pacPosY):
+        self.accumulator += self.velocidade
+        start = (self.posX, self.posY)  # Posição inicial do fantasma
+        goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
+        
+        # Estruturas de dados para Dijkstra
+        frontier = []  # Fila de prioridade
+        heapq.heappush(frontier, (0, start))  # (custo, posição)
+        came_from = {}  # Rastrear caminho
+        cost_so_far = {}  # Custos acumulados
+        came_from[start] = None
+        cost_so_far[start] = 0
+        
+        # Realiza busca
+        while frontier:
+            # Retira a posição com menor custo acumulado
+            current_cost, current_pos = heapq.heappop(frontier)
+            
+            # Se alcançou o destino, pare
+            if current_pos == goal:
+                break
+            
+            # Para cada vizinho do nó atual
+            for next_pos in self.get_neighbors(current_pos):
+                # Custo acumulado para o vizinho
+                new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
+                
+                # Se for um custo menor ou o vizinho ainda não foi visitado
+                if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                    cost_so_far[next_pos] = new_cost
+                    priority = new_cost  # Prioridade é o custo acumulado
+                    heapq.heappush(frontier, (priority, next_pos))
+                    came_from[next_pos] = current_pos
+        
+        # Reconstrói o caminho
+        current = goal
+        path = []
+        while current != start:
+            path.append(current)
+            current = came_from[current]
+        path.reverse()
+        
+        # Se o caminho não estiver vazio, defina a direção para o próximo passo
+        if path:
+            next_step = path.pop(0)
+            self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
+    
+    def get_direction(self, current_x, current_y, next_x, next_y):
+        # Retorna a direção com base nas coordenadas atuais e próximas
+        if next_x > current_x:
+            return Direcoes.DIREITA
+        elif next_x < current_x:
+            return Direcoes.ESQUERDA
+        elif next_y > current_y:
+            return Direcoes.BAIXO
+        elif next_y < current_y:
+            return Direcoes.CIMA
+        return Direcoes.DIREITA
+
+    def get_neighbors(self, pos):
+        # Retornar posições vizinhas (cima, baixo, esquerda, direita)
+        # Adicionar lógica para verificar se a posição é válida (dentro do grid)
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        neighbors = []
+        for dx, dy in directions:
+            new_pos = (pos[0] + dx, pos[1] + dy)
+            # Verifica se a nova posição está dentro do grid
+            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas:
+                neighbors.append(new_pos)
+        return neighbors
+
 
 class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
@@ -347,7 +425,11 @@ class Labyrinth:
         
     def addAStarGhost(self, x, y):
         self.textLab[x][y] = 'S'
-        self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
+        self.logicalLab[x][y] = GhostAStar(0.05, x, y, None)
+
+    def addSPFGhost(self, x, y):
+        self.textLab[x][y] = 'S'
+        self.logicalLab[x][y] = SPFGhost(0.05, x, y, None)
 
     def addObstacle(self, x, y):
         self.textLab[x][y] = 'B'
