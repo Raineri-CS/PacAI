@@ -426,14 +426,19 @@ class Labyrinth:
         self.logicalLab = [[' ' for _ in range(num_linhas)] for _ in range(num_colunas)]
         self.pacPosX = 0
         self.pacPosY = 0
+        self.normalBallAmount = 0
+        self.superBallAmount = 0
 
     def addBall(self, x, y):
         self.textLab[x][y] = 'o'
         self.logicalLab[x][y] = Ball(x, y, None)
+        self.normalBallAmount += 1
+        
 
     def addSuperBall(self, x, y):
         self.textLab[x][y] = 'O'
         self.logicalLab[x][y] = SuperBall(x, y, None)
+        self.superBallAmount += 1
 
     def addGhost(self, x, y):
         self.textLab[x][y] = 'X'
@@ -542,6 +547,8 @@ class Labyrinth:
                     pac.setSpawnLoc(i, j)
                 elif symbol == 'F':
                     self.addSPFGhost(i, j)
+                elif symbol == ' ':
+                    self.logicalLab[i][j] = ' '
                     
     def readLabFromFile(self):
         f = open(f'{lab_index}.txt', 'r')
@@ -564,7 +571,6 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab(pacman)
 
-lab.addAStarGhost(2,2)
 
 paused = False
 # Loop principal
@@ -579,7 +585,21 @@ while True:
                 sys.exit()
             elif(evento.key == K_SPACE):
                 paused = not paused
+            elif(evento.key == K_1):
+                lab_index = 1
+                lab.readLabFromFile()
+                lab.convertTextLabIntoLogicalLab(pacman)
+            elif(evento.key == K_2):
+                lab_index = 2
+                lab.readLabFromFile()
+                lab.convertTextLabIntoLogicalLab(pacman)
+            elif(evento.key == K_3):
+                lab_index = 3
+                lab.readLabFromFile()
+                lab.convertTextLabIntoLogicalLab(pacman)
+
             
+
     if not paused:
         
         # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
@@ -637,6 +657,10 @@ while True:
                         entity.draw()
                         if entity.toBePicked and pacMove:
                             if pacman.x == entity.posX and pacman.y == entity.posY:
+                                if isinstance(entity, Ball):
+                                    lab.normalBallAmount -= 1
+                                elif isinstance(entity, SuperBall):
+                                    lab.superBallAmount -= 1
                                 entity.isDrawable = False
                             entity.toBePicked = False
     else:
