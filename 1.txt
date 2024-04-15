@@ -1,7 +1,7 @@
 BBBBBBBBBBBBBBBBBBBB
 BOooooooooooooooooOB
 BoBBBoBBBoBBBoBBBBoB
-B BBBoBBBoBBBoBBBBoB
+BoBBBoBBBoBBBoBBBBoB
 BooBoooBoooBooooBooB
 BoooooBBBoooooBBBBoB
 BBBBoooBooBoBoBBBBoB
@@ -16,7 +16,7 @@ BooBBBoBoooBoooooooB
 BooBBBoBBBBBoBBBBBoB
 BooooooooBoooooBoooB
 BooBoooBBBBBBooooBBB
-BoBBBooooooooooBBBBB
+BoBBBoooSooooooBBBBB
 BoooooBBBBBBBBoooooB
 BoBBBoBBBBBBBBoBBBoB
 BooooooooBBooooooooB

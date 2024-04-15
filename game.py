@@ -222,10 +222,18 @@ class GhostAStar(Ghost):
     def __init__(self, pVelocidade, x, y, color):
         super().__init__(pVelocidade, x, y, color)
         self.path = []
+        self.superBallMultiplier = 0.01
+        self.normalBallMultiplier = 0.001
+        self.velocidadeBase = pVelocidade
     
     def update(self, pacman_coluna, pacman_linha, lab):
         # Pra diferenciar os ticks dos fantasmas
         self.accumulator += self.velocidade
+        
+        normalBallDiff = lab.totalBallAmount - lab.normalBallAmount
+        superBallDiff = lab.totalSuperBallAmount - lab.superBallAmount
+        if  normalBallDiff > 0 or superBallDiff > 0 :
+            self.velocidade = self.velocidadeBase + (self.velocidadeBase * (superBallDiff * self.superBallMultiplier)) + (self.velocidadeBase * (normalBallDiff * self.normalBallMultiplier))
         
         # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
         self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha))
@@ -427,13 +435,14 @@ class Labyrinth:
         self.pacPosX = 0
         self.pacPosY = 0
         self.normalBallAmount = 0
+        self.totalBallAmount = 0
         self.superBallAmount = 0
+        self.totalSuperBallAmount =0
 
     def addBall(self, x, y):
         self.textLab[x][y] = 'o'
         self.logicalLab[x][y] = Ball(x, y, None)
         self.normalBallAmount += 1
-        
 
     def addSuperBall(self, x, y):
         self.textLab[x][y] = 'O'
@@ -450,7 +459,7 @@ class Labyrinth:
         
     def addAStarGhost(self, x, y):
         self.textLab[x][y] = 'S'
-        self.logicalLab[x][y] = GhostAStar(0.05, x, y, None)
+        self.logicalLab[x][y] = GhostAStar(0.05, x, y, vermelho)
 
     def addSPFGhost(self, x, y):
         self.textLab[x][y] = 'S'
@@ -573,7 +582,8 @@ lab = Labyrinth()
 
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab(pacman)
-
+lab.totalBallAmount = lab.normalBallAmount
+lab.totalSuperBallAmount = lab.superBallAmount
 
 paused = False
 # Loop principal
@@ -593,16 +603,22 @@ while True:
                 lab_index = 1
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
+                lab.totalBallAmount = lab.normalBallAmount
+                lab.totalSuperBallAmount = lab.superBallAmount
             elif(evento.key == K_2):
                 lab.reset()
                 lab_index = 2
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
+                lab.totalBallAmount = lab.normalBallAmount
+                lab.totalSuperBallAmount = lab.superBallAmount
             elif(evento.key == K_3):
                 lab.reset()
                 lab_index = 3
                 lab.readLabFromFile()
                 lab.convertTextLabIntoLogicalLab(pacman)
+                lab.totalBallAmount = lab.normalBallAmount
+                lab.totalSuperBallAmount = lab.superBallAmount
 
             
 
