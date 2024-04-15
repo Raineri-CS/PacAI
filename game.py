@@ -251,7 +251,7 @@ class GhostAStar(Ghost):
             if current == goal:
                 break
             
-            for next in self.get_neighbors(current):
+            for next in self.get_neighbors(current, lab):
                 new_cost = cost_so_far[current] + 1  # Custo pode ser 1 para cada passo
                 if next not in cost_so_far or new_cost < cost_so_far[next]:
                     cost_so_far[next] = new_cost
@@ -268,15 +268,18 @@ class GhostAStar(Ghost):
         path.reverse()
         return path
     
-    def get_neighbors(self, pos):
+    def get_neighbors(self, pos, lab):
         # Retornar posições vizinhas (cima, baixo, esquerda, direita)
         # Adicionar lógica para verificar se a posição é válida (dentro do grid)
         directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
         neighbors = []
+        logicalLabShallowCopy = lab.getLogicalLab()
         for dx, dy in directions:
             new_pos = (pos[0] + dx, pos[1] + dy)
+            # Verifica se na nova posiscao ha alguma colisao
+                
             # Verifica se a nova posição está dentro do grid
-            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas:
+            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas and not isinstance(logicalLabShallowCopy[new_pos[0]][new_pos[1]], Obstacle):
                 neighbors.append(new_pos)
         return neighbors
     
@@ -557,7 +560,7 @@ lab = Labyrinth()
 lab.readLabFromFile()
 lab.convertTextLabIntoLogicalLab(pacman)
 
-lab.addSPFGhost(2,2)
+lab.addAStarGhost(2,2)
 
 paused = False
 # Loop principal
