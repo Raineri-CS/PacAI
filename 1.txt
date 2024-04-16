@@ -10,9 +10,9 @@ BooooooooooooooooooB
 BoBBBBoBBBBBBBBBoBBB
 BooooBooooooooBooooB
 BooBBBoBBBBBoBBBoooB
-BooooooBoooBoooooooB
-BooBBBoBoooooBBBoooB
-BooBBBoBoooBoooooooB
+BooooooBoAoBoooooooB
+BooBBBoBCEoooBBBoooB
+BooBBBoBoDoBoooooooB
 BooBBBoBBBBBoBBBBBoB
 BooooooooBoooooBoooB
 BooBoooBBBBBBooooBBB
