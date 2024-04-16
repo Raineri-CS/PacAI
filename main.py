@@ -662,32 +662,32 @@ class Labyrinth:
     def addGhost(self, x, y):
         self.textLab[x][y] = 'X'
         self.logicalLab[x][y] = Ghost(0.05, x, y, None)
-        self.origin = (x, y)
+        self.logicalLab[x][y].origin = (x, y)
         
     def addGhostGulosa(self, x, y):
         self.textLab[x][y] = 'G'
         self.logicalLab[x][y] = GhostGulosa(0.05, x, y, None)
-        self.origin = (x, y)
+        self.logicalLab[x][y].origin = (x, y)
         
     def addAStarGhost(self, x, y):
         self.textLab[x][y] = 'S'
         self.logicalLab[x][y] = GhostAStar(0.05, x, y, vermelho)
-        self.origin = (x, y)
+        self.logicalLab[x][y].origin = (x, y)
 
     def addSPFGhost(self, x, y):
         self.textLab[x][y] = 'L'
         self.logicalLab[x][y] = SPFGhost(0.05, x, y, rosa)
-        self.origin = (x, y)
+        self.logicalLab[x][y].origin = (x, y)
     
     def addInky(self, x, y):
         self.textLab[x][y] = 'I'
         self.logicalLab[x][y] = Inky(0.05, x, y, ciano)
-        self.origin = (x, y)
+        self.logicalLab[x][y].origin = (x, y)
         
     def addClyde(self, x, y):
         self.textLab[x][y] = 'C'
         self.logicalLab[x][y] = Clyde(0.05, x, y, azEscuro)
-        self.origin = (x, y)
+        self.logicalLab[x][y].origin = (x, y)
 
     def addObstacle(self, x, y):
         self.textLab[x][y] = 'B'
