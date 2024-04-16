@@ -1,5 +1,5 @@
 BBBBBBBBBBBBBBBBBBBB
-BoooooooBBBBoooooBoB
+BPooooooBBBBoooooBoB
 BoBBBoBooooooBBooBoB
 BoBBBoBoBBBBoBBooBoB
 BoooooBoooooo BooooB
@@ -11,9 +11,9 @@ BoBBoBBBBoBoBBBoBBoB
 BoBBooBBBoooBBBooooB
 BoBBBoBBBBoooBBoBBoB
 BoBBooBBBBBBoBBooooB
-BooooooBoooBoooooooB
-BooBBBoBoooooBBBoooB
-BooBBBoBoooBoooooPoB
+BooooooBoAoBoooooooB
+BooBBBoBCEoooBBBoooB
+BooBBBoBoDoBoooooPoB
 BooBBBoBBBBBoBBBBBoB
 BooooooooBoooooooooB
 BoBBBoBBBBBBBBoBBBBB
