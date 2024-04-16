@@ -10,6 +10,7 @@ from enum import Enum
 
 # Inicialização do Pygame
 pygame.init()
+pygame.mixer.init()
 
 # Configurações da tela
 largura, altura = 810, 600
@@ -25,6 +26,11 @@ labyrinthWall = pygame.image.load("./resources/wall.png","wall.png")
 orca = pygame.image.load("./resources/baleia_assassina.png","baleia_assassina.png")
 babyShark = pygame.image.load("./resources/babyshark.png","babyshark.png")
 perola = pygame.image.load("./resources/perola.png","perola.png")
+
+# Define a musica a tocar
+pygame.mixer.music.load("./resources/Aquatic-Ambience.ogg","Aquatic-Ambience.ogg")
+# O -1 faz a musica tocar infitamente
+pygame.mixer.music.play(-1)
 
 # Cores
 preto = (0, 0, 0)
