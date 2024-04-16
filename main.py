@@ -907,6 +907,19 @@ def main():
                 lab.pacPosX = pacman.x
                 lab.pacPosY = pacman.y
             
+            # Troca o nivel se acabou as pellets
+            if lab.totalBallAmount <= 0:
+                lab.reset()
+                if lab_index == 3:
+                    lab_index = 1
+                lab_index += 1
+                lab.readLabFromFile(lab_index)
+                lab.convertTextLabIntoLogicalLab(pacman)
+                lab.totalBallAmount = lab.normalBallAmount
+                lab.totalSuperBallAmount = lab.superBallAmount
+                lab.pacPosX = pacman.x
+                lab.pacPosY = pacman.y
+            
             # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
             # Logica do player (pacman)
             teclas = pygame.key.get_pressed()
