@@ -19,6 +19,13 @@ pygame.display.set_caption("Pac-Man Clone")
 # Criar uma fonte de texto (tamanho 48)
 fonte = pygame.font.Font(None, 48)
 
+# Criar as texturas a serem usadas
+background = pygame.image.load("./resources/bg.png", "bg.png")
+labyrinthWall = pygame.image.load("./resources/wall.png","wall.png")
+orca = pygame.image.load("./resources/baleia_assassina.png","baleia_assassina.png")
+babyShark = pygame.image.load("./resources/babyshark.png","babyshark.png")
+perola = pygame.image.load("./resources/perola.png","perola.png")
+
 # Cores
 preto = (0, 0, 0)
 amarelo = (255, 255, 0)
@@ -28,7 +35,8 @@ vermelho = (255, 0, 0)
 rosa =  (255,182,193)
 ciano = (0,255,255)
 azEscuro = (0,0,200)
-
+corShark = (124,194,230)
+corShark2 = (43,127,191)
 
 # Tamanho do grid 
 tamanho_celula = 30
@@ -47,7 +55,6 @@ class Direcoes(Enum):
 class Pacman:
 
     def __init__(self):
-        # TODO isso aqui assume que o pacman nasce no meio da tela, fazer ser possivel ler isso do arquivo
         self.x = num_colunas // 2
         self.y = num_linhas // 2
         self.raio = tamanho_celula // 2
@@ -67,10 +74,11 @@ class Pacman:
         else:
             self.accumulator += self.velocidade
 
-    def draw(self):
-        x = self.x * tamanho_celula + self.raio
-        y = self.y * tamanho_celula + self.raio
-        pygame.draw.circle(tela, amarelo, (x, y), self.raio)
+    def draw(self, tela):
+        x = self.x * tamanho_celula
+        y = self.y * tamanho_celula
+        tela.blit(pygame.transform.scale(orca,(tamanho_celula,tamanho_celula)), (x,y))
+        # pygame.draw.circle(tela, amarelo, (x, y), self.raio)
         
     def getPosX(self):
         return self.x
@@ -95,7 +103,7 @@ class Entity:
         self.toBePicked = False
         self.toKillPlayer = False
         
-    def draw(self):
+    def draw(self, tela):
         pass
     
     def collide(self, x, y):
@@ -104,8 +112,6 @@ class Entity:
             return True
         return False
 
-# TODO Classes derivadas dos fantasmas
-# Classe base do fantasma TODO
 class Ghost(Entity):
     def __init__(self, pVelocidade, x, y, color):
         self.raio = tamanho_celula // 2
@@ -154,12 +160,17 @@ class Ghost(Entity):
                 self.posX = nova_coluna
                 self.posY = nova_linha
 
-    def draw(self):
-        # TODO arrumar o desenho do fantasma aqui
-        # TODO talvez deixar esse metodo vazio pois a classe derivada que vai se auto definir o desenho
-        x = self.posX * tamanho_celula + self.raio
-        y = self.posY * tamanho_celula + self.raio
-        pygame.draw.circle(tela, self.color, (x, y), self.raio)
+    def draw(self, tela):
+        x = self.posX * tamanho_celula 
+        y = self.posY * tamanho_celula
+        localBabyShark = pygame.transform.scale(babyShark, (tamanho_celula , tamanho_celula ))
+        toBlitBabyShark = pygame.PixelArray(localBabyShark)
+        toBlitBabyShark.replace(corShark, self.color)
+        toBlitBabyShark.replace(corShark, self.color)
+        
+        tela.blit(toBlitBabyShark.make_surface(), (x,y))
+        del toBlitBabyShark
+        # pygame.draw.circle(tela, self.color, (x, y), self.raio)
         
     def translateDirectionsToCoords(self):
         res = []
@@ -174,7 +185,6 @@ class Ghost(Entity):
                 res.append((0,-1))
                 
     def update():
-        # TODO calcula o prox movimento
         pass
 
 class GhostGulosa(Ghost):
@@ -611,15 +621,13 @@ class Obstacle(Entity):
     def __init__(self, pPosX, pPosY, spriteType):
         super().__init__(pPosX, pPosY)
         self.isCollision = True
-        # TODO definir aqui qual tipo de spirte vai ser usada, por exemplo | - + 
-        # self.sprite = 
     
-    def draw(self):
-        # TODO desenhar na posicao desejada
-        # FIXME
-        x = (self.posX * tamanho_celula) + (tamanho_celula / 4)
-        y = (self.posY * tamanho_celula) + (tamanho_celula / 4)
-        pygame.draw.rect(tela, azul, pygame.Rect(x,y,tamanho_celula/2,tamanho_celula/2))
+    def draw(self, tela):
+        x = (self.posX * tamanho_celula)
+        y = (self.posY * tamanho_celula)
+        
+        tela.blit(pygame.transform.scale(labyrinthWall, (tamanho_celula , tamanho_celula )), (x,y))
+        # pygame.draw.rect(tela, azul, pygame.Rect(x,y,tamanho_celula/2,tamanho_celula/2))
         pass
     
 class SuperBall(Entity):
@@ -628,7 +636,7 @@ class SuperBall(Entity):
         self.isPickup = True
         self.isPower = True
     
-    def draw(self):
+    def draw(self, tela):
         x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
         y = (self.posY * tamanho_celula) + (tamanho_celula / 2)
         pygame.draw.circle(tela, branco, (x,y), 10)
@@ -639,10 +647,11 @@ class Ball(Entity):
         super().__init__(pPosX, pPosY)
         self.isPickup = True
     
-    def draw(self):
-        x = (self.posX * tamanho_celula) + (tamanho_celula / 2)
-        y = (self.posY * tamanho_celula) + (tamanho_celula / 2)
-        pygame.draw.circle(tela, branco, (x,y), 5)
+    def draw(self, tela):
+        x = (self.posX * tamanho_celula) + tamanho_celula/4
+        y = (self.posY * tamanho_celula) + tamanho_celula/4
+        
+        tela.blit(pygame.transform.scale(perola, (tamanho_celula/2, tamanho_celula/2)), (x,y))
         pass
 
 class Labyrinth:
@@ -929,9 +938,10 @@ def main():
                 lab.pacPosY = pacman.y
         
             # Desenhar na tela
-            tela.fill(preto)
-            pacman.draw()
-
+            
+            tela.blit(pygame.transform.scale(background, (largura, altura)), (0,0))
+            pacman.draw(tela)
+            priorityDrawList = []
             for line in lab.logicalLab:
                 for entity in line:
                     if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
@@ -945,7 +955,11 @@ def main():
                             if entity.accumulator == 0:
                                 ghostMove = True
                         if entity.isDrawable:
-                            entity.draw()
+                            if(isinstance(entity, Ghost)):
+                                priorityDrawList.append(entity)
+                            else:
+                                entity.draw(tela)
+                                
                             if entity.toBePicked or entity.toKillPlayer or ghostMove or pacMove:
                                 if pacman.x == entity.posX and pacman.y == entity.posY:
                                     if isinstance(entity, Ball):
@@ -959,6 +973,8 @@ def main():
                                         pass
                                     entity.isDrawable = False
                                 entity.toBePicked = False
+            for entity in priorityDrawList:
+                entity.draw(tela)
         else:
             s = pygame.Surface((largura, altura))
             s.set_alpha(2)
