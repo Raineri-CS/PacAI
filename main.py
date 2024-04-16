@@ -614,8 +614,6 @@ def main():
                     pygame.quit()
                     sys.exit()
                 elif(evento.key == K_SPACE):
-                    if dead:
-                        dead = not dead
                     paused = not paused
                 elif(evento.key == K_1):
                     lab.reset()
@@ -657,6 +655,8 @@ def main():
                 lab.convertTextLabIntoLogicalLab(pacman)
                 lab.totalBallAmount = lab.normalBallAmount
                 lab.totalSuperBallAmount = lab.superBallAmount
+                lab.pacPosX = pacman.x
+                lab.pacPosY = pacman.y
             
             # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
             # Logica do player (pacman)
