@@ -27,7 +27,7 @@ azul = (0, 0, 255)
 vermelho = (255, 0, 0)
 rosa =  (255,182,193)
 ciano = (0,255,255)
-azEscuro = (0,0,139)
+azEscuro = (0,0,200)
 
 
 # Tamanho do grid 
@@ -685,17 +685,17 @@ class Labyrinth:
 
     def addSPFGhost(self, x, y):
         self.textLab[x][y] = 'L'
-        self.logicalLab[x][y] = SPFGhost(0.05, x, y, rosa)
+        self.logicalLab[x][y] = SPFGhost(0.03, x, y, rosa)
         self.logicalLab[x][y].origin = (x, y)
     
     def addInky(self, x, y):
         self.textLab[x][y] = 'I'
-        self.logicalLab[x][y] = Inky(0.05, x, y, ciano)
+        self.logicalLab[x][y] = Inky(0.07, x, y, ciano)
         self.logicalLab[x][y].origin = (x, y)
         
     def addClyde(self, x, y):
         self.textLab[x][y] = 'C'
-        self.logicalLab[x][y] = Clyde(0.05, x, y, azEscuro)
+        self.logicalLab[x][y] = Clyde(0.1, x, y, azEscuro)
         self.logicalLab[x][y].origin = (x, y)
 
     def addObstacle(self, x, y):
