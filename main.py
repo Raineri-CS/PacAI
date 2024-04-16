@@ -236,13 +236,16 @@ class GhostAStar(Ghost):
         if  normalBallDiff > 0 or superBallDiff > 0 :
             self.velocidade = self.velocidadeBase + (self.velocidadeBase * (superBallDiff * self.superBallMultiplier)) + (self.velocidadeBase * (normalBallDiff * self.normalBallMultiplier))
         
-        # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
-        self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha), lab)
-        
-        # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
-        if self.path:
-            next_step = self.path.pop(0)
-            self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
+        if random.random() < 0.01:
+            self.dir = random.choice(self.possibleMoveList)
+        else:
+            # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
+            self.path = self.astar_search((self.posX, self.posY), (pacman_coluna, pacman_linha), lab)
+
+            # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
+            if self.path:
+                next_step = self.path.pop(0)
+                self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
         
     
     def astar_search(self, start, goal, lab):
@@ -319,47 +322,50 @@ class SPFGhost(Ghost):
         start = (self.posX, self.posY)  # Posição inicial do fantasma
         goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
         
-        # Estruturas de dados para Dijkstra
-        frontier = []  # Fila de prioridade
-        heapq.heappush(frontier, (0, start))  # (custo, posição)
-        came_from = {}  # Rastrear caminho
-        cost_so_far = {}  # Custos acumulados
-        came_from[start] = None
-        cost_so_far[start] = 0
-        
-        # Realiza busca
-        while frontier:
-            # Retira a posição com menor custo acumulado
-            current_cost, current_pos = heapq.heappop(frontier)
-            
-            # Se alcançou o destino, pare
-            if current_pos == goal:
-                break
-            
-            # Para cada vizinho do nó atual
-            for next_pos in self.get_neighbors(current_pos, lab):
-                # Custo acumulado para o vizinho
-                new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
+        if random.random() < 0.01:
+            self.dir = random.choice(self.possibleMoveList)
+        else:
+            # Estruturas de dados para Dijkstra
+            frontier = []  # Fila de prioridade
+            heapq.heappush(frontier, (0, start))  # (custo, posição)
+            came_from = {}  # Rastrear caminho
+            cost_so_far = {}  # Custos acumulados
+            came_from[start] = None
+            cost_so_far[start] = 0
+
+            # Realiza busca
+            while frontier:
+                # Retira a posição com menor custo acumulado
+                current_cost, current_pos = heapq.heappop(frontier)
+
+                # Se alcançou o destino, pare
+                if current_pos == goal:
+                    break
                 
-                # Se for um custo menor ou o vizinho ainda não foi visitado
-                if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
-                    cost_so_far[next_pos] = new_cost
-                    priority = new_cost  # Prioridade é o custo acumulado
-                    heapq.heappush(frontier, (priority, next_pos))
-                    came_from[next_pos] = current_pos
-        
-        # Reconstrói o caminho
-        current = goal
-        path = []
-        while current != start:
-            path.append(current)
-            current = came_from[current]
-        path.reverse()
-        
-        # Se o caminho não estiver vazio, defina a direção para o próximo passo
-        if path:
-            next_step = path.pop(0)
-            self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
+                # Para cada vizinho do nó atual
+                for next_pos in self.get_neighbors(current_pos, lab):
+                    # Custo acumulado para o vizinho
+                    new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
+
+                    # Se for um custo menor ou o vizinho ainda não foi visitado
+                    if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                        cost_so_far[next_pos] = new_cost
+                        priority = new_cost  # Prioridade é o custo acumulado
+                        heapq.heappush(frontier, (priority, next_pos))
+                        came_from[next_pos] = current_pos
+
+            # Reconstrói o caminho
+            current = goal
+            path = []
+            while current != start:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+
+            # Se o caminho não estiver vazio, defina a direção para o próximo passo
+            if path:
+                next_step = path.pop(0)
+                self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
     
     def get_direction(self, current_x, current_y, next_x, next_y):
         # Retorna a direção com base nas coordenadas atuais e próximas
@@ -396,60 +402,63 @@ class Inky(Ghost):
     def update(self, pacPosX, pacPosY, lab):
         self.accumulator += self.velocidade
         
-        if random.random() > 0.5:    
-            start = (self.posX, self.posY)  # Posição inicial do fantasma
-            goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
-            
-            # Estruturas de dados para Dijkstra
-            frontier = []  # Fila de prioridade
-            heapq.heappush(frontier, (0, start))  # (custo, posição)
-            came_from = {}  # Rastrear caminho
-            cost_so_far = {}  # Custos acumulados
-            came_from[start] = None
-            cost_so_far[start] = 0
-            
-            # Realiza busca
-            while frontier:
-                # Retira a posição com menor custo acumulado
-                current_cost, current_pos = heapq.heappop(frontier)
-                
-                # Se alcançou o destino, pare
-                if current_pos == goal:
-                    break
-                
-                # Para cada vizinho do nó atual
-                for next_pos in self.get_neighbors(current_pos, lab):
-                    # Custo acumulado para o vizinho
-                    new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
-                    
-                    # Se for um custo menor ou o vizinho ainda não foi visitado
-                    if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
-                        cost_so_far[next_pos] = new_cost
-                        priority = new_cost  # Prioridade é o custo acumulado
-                        heapq.heappush(frontier, (priority, next_pos))
-                        came_from[next_pos] = current_pos
-            
-            # Reconstrói o caminho
-            current = goal
-            path = []
-            while current != start:
-                path.append(current)
-                current = came_from[current]
-            path.reverse()
-            
-            # Se o caminho não estiver vazio, defina a direção para o próximo passo
-            if path:
-                next_step = path.pop(0)
-                self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
-        else:
-            # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
-            self.path = self.astar_search((self.posX, self.posY), (pacPosX, pacPosY), lab)
-
-            # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
-            if self.path:
-                next_step = self.path.pop(0)
-                self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
         
+        if random.random() < 0.01:
+            self.dir = random.choice(self.possibleMoveList)
+        else:
+            if random.random() > 0.5:    
+                start = (self.posX, self.posY)  # Posição inicial do fantasma
+                goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
+                
+                # Estruturas de dados para Dijkstra
+                frontier = []  # Fila de prioridade
+                heapq.heappush(frontier, (0, start))  # (custo, posição)
+                came_from = {}  # Rastrear caminho
+                cost_so_far = {}  # Custos acumulados
+                came_from[start] = None
+                cost_so_far[start] = 0
+                
+                # Realiza busca
+                while frontier:
+                    # Retira a posição com menor custo acumulado
+                    current_cost, current_pos = heapq.heappop(frontier)
+                    
+                    # Se alcançou o destino, pare
+                    if current_pos == goal:
+                        break
+                    
+                    # Para cada vizinho do nó atual
+                    for next_pos in self.get_neighbors(current_pos, lab):
+                        # Custo acumulado para o vizinho
+                        new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
+                        
+                        # Se for um custo menor ou o vizinho ainda não foi visitado
+                        if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                            cost_so_far[next_pos] = new_cost
+                            priority = new_cost  # Prioridade é o custo acumulado
+                            heapq.heappush(frontier, (priority, next_pos))
+                            came_from[next_pos] = current_pos
+                
+                # Reconstrói o caminho
+                current = goal
+                path = []
+                while current != start:
+                    path.append(current)
+                    current = came_from[current]
+                path.reverse()
+                
+                # Se o caminho não estiver vazio, defina a direção para o próximo passo
+                if path:
+                    next_step = path.pop(0)
+                    self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
+            else:
+                # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
+                self.path = self.astar_search((self.posX, self.posY), (pacPosX, pacPosY), lab)
+
+                # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
+                if self.path:
+                    next_step = self.path.pop(0)
+                    self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
     
     def astar_search(self, start, goal, lab):
         # Implementação do algoritmo A* aqui
