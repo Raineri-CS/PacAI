@@ -27,7 +27,7 @@ azul = (0, 0, 255)
 vermelho = (255, 0, 0)
 rosa =  (255,182,193)
 ciano = (0,255,255)
-#TODO fazer a funcao de reset
+azEscuro = (0,0,139)
 
 
 # Tamanho do grid 
@@ -159,7 +159,7 @@ class Ghost(Entity):
         # TODO talvez deixar esse metodo vazio pois a classe derivada que vai se auto definir o desenho
         x = self.posX * tamanho_celula + self.raio
         y = self.posY * tamanho_celula + self.raio
-        pygame.draw.circle(tela, vermelho, (x, y), self.raio)
+        pygame.draw.circle(tela, self.color, (x, y), self.raio)
         
     def translateDirectionsToCoords(self):
         res = []
@@ -389,9 +389,9 @@ class SPFGhost(Ghost):
         return neighbors
 
 
-class inky(Ghost):
+class Inky(Ghost):
     def __init__(self, pVelocidade, x, y, color):
-        super(SPFGhost, self).__init__(pVelocidade, x, y, color)
+        super(Inky, self).__init__(pVelocidade, x, y, color)
         
     def update(self, pacPosX, pacPosY, lab):
         self.accumulator += self.velocidade
@@ -484,6 +484,92 @@ class inky(Ghost):
             current = came_from[current]
         path.reverse()
         return path
+    
+    def get_direction(self, current_x, current_y, next_x, next_y):
+        # Retorna a direção com base nas coordenadas atuais e próximas
+        if next_x > current_x:
+            return Direcoes.DIREITA
+        elif next_x < current_x:
+            return Direcoes.ESQUERDA
+        elif next_y > current_y:
+            return Direcoes.BAIXO
+        elif next_y < current_y:
+            return Direcoes.CIMA
+        return Direcoes.DIREITA
+
+    def heuristic(self, goal, next):
+        # Heurística de Manhattan
+        return abs(goal[0] - next[0]) + abs(goal[1] - next[1])
+    
+
+    def get_neighbors(self, pos, lab):
+        # Retornar posições vizinhas (cima, baixo, esquerda, direita)
+        # Adicionar lógica para verificar se a posição é válida (dentro do grid)
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        neighbors = []
+        logicalLabShallowCopy = lab.getLogicalLab()
+        for dx, dy in directions:
+            new_pos = (pos[0] + dx, pos[1] + dy)
+            # Verifica se na nova posiscao ha alguma colisao
+                
+            # Verifica se a nova posição está dentro do grid
+            if 0 <= new_pos[0] < num_colunas and 0 <= new_pos[1] < num_linhas and not isinstance(logicalLabShallowCopy[new_pos[0]][new_pos[1]], Obstacle):
+                neighbors.append(new_pos)
+        return neighbors
+
+class Clyde(Ghost):
+    def __init__(self, pVelocidade, x, y, color):
+        super(Clyde, self).__init__(pVelocidade, x, y, color)
+    
+    def update(self, pacPosX, pacPosY, lab):
+        dist = math.sqrt(pow(pacPosX - self.posX, 2) + pow(pacPosY - self.posY, 2))
+        self.accumulator += self.velocidade
+        start = (self.posX, self.posY)  # Posição inicial do fantasma
+        if dist > 3:
+            goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
+        else:
+            goal = self.origin
+        # Estruturas de dados para Dijkstra
+        frontier = []  # Fila de prioridade
+        heapq.heappush(frontier, (0, start))  # (custo, posição)
+        came_from = {}  # Rastrear caminho
+        cost_so_far = {}  # Custos acumulados
+        came_from[start] = None
+        cost_so_far[start] = 0
+        
+        # Realiza busca
+        while frontier:
+            # Retira a posição com menor custo acumulado
+            current_cost, current_pos = heapq.heappop(frontier)
+            
+            # Se alcançou o destino, pare
+            if current_pos == goal:
+                break
+            
+            # Para cada vizinho do nó atual
+            for next_pos in self.get_neighbors(current_pos, lab):
+                # Custo acumulado para o vizinho
+                new_cost = cost_so_far[current_pos] + 1  # Custo unitário para cada movimento
+                
+                # Se for um custo menor ou o vizinho ainda não foi visitado
+                if next_pos not in cost_so_far or new_cost < cost_so_far[next_pos]:
+                    cost_so_far[next_pos] = new_cost
+                    priority = new_cost  # Prioridade é o custo acumulado
+                    heapq.heappush(frontier, (priority, next_pos))
+                    came_from[next_pos] = current_pos
+        
+        # Reconstrói o caminho
+        current = goal
+        path = []
+        while current != start:
+            path.append(current)
+            current = came_from[current]
+        path.reverse()
+        
+        # Se o caminho não estiver vazio, defina a direção para o próximo passo
+        if path:
+            next_step = path.pop(0)
+            self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
     
     def get_direction(self, current_x, current_y, next_x, next_y):
         # Retorna a direção com base nas coordenadas atuais e próximas
@@ -592,10 +678,21 @@ class Labyrinth:
         self.textLab[x][y] = 'L'
         self.logicalLab[x][y] = SPFGhost(0.05, x, y, rosa)
         self.origin = (x, y)
+    
+    def addInky(self, x, y):
+        self.textLab[x][y] = 'I'
+        self.logicalLab[x][y] = Inky(0.05, x, y, ciano)
+        self.origin = (x, y)
+        
+    def addClyde(self, x, y):
+        self.textLab[x][y] = 'C'
+        self.logicalLab[x][y] = Clyde(0.05, x, y, azEscuro)
+        self.origin = (x, y)
 
     def addObstacle(self, x, y):
         self.textLab[x][y] = 'B'
         self.logicalLab[x][y] =  Obstacle(x, y, None)
+        
 
     def print(self):
         for x in self.textLab:
@@ -691,8 +788,12 @@ class Labyrinth:
                     self.addAStarGhost(i, j)
                 elif symbol == 'P':
                     pac.setSpawnLoc(i, j)
-                elif symbol == 'F':
+                elif symbol == 'L':
                     self.addSPFGhost(i, j)
+                elif symbol == 'I':
+                    self.addInky(i, j)
+                elif symbol == 'C':
+                    self.addClyde(i, j)
                 elif symbol == ' ':
                     self.logicalLab[i][j] = ' '
                     
@@ -836,8 +937,7 @@ def main():
                                 ghostMove = True
                         if entity.isDrawable:
                             entity.draw()
-                            #TODO ARRUMAR ISSO
-                            if (entity.toBePicked or (entity.toKillPlayer or ghostMove)) or pacMove:
+                            if entity.toBePicked or entity.toKillPlayer or ghostMove or pacMove:
                                 if pacman.x == entity.posX and pacman.y == entity.posY:
                                     if isinstance(entity, Ball):
                                         lab.normalBallAmount -= 1

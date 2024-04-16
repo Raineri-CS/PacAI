@@ -10,13 +10,13 @@ BooooooooooooooooooB
 BoBBBBoBBBBBBBBBoBBB
 BooooBooooooooBooooB
 BooBBBoBBBBBoBBBoooB
-BooooooBoAoBoooooooB
-BooBBBoBCEoooBBBoooB
-BooBBBoBoDoBoooooooB
+BooooooBoSoBoooooooB
+BooBBBoBLCoooBBBoooB
+BooBBBoBoIoBoooooooB
 BooBBBoBBBBBoBBBBBoB
 BooooooooBoooooBoooB
 BooBoooBBBBBBooooBBB
-BoBBBooooSoooooBBBBB
+BoBBBooooooooooBBBBB
 BoooooBBBBBBBBoooooB
 BoBBBoBBBBBBBBoBBBoB
 BooooooooBBooooooooB
