@@ -7,7 +7,6 @@ import heapq
 from pygame.locals import *
 from enum import Enum
 
-
 # Inicialização do Pygame
 pygame.init()
 pygame.mixer.init()
@@ -63,9 +62,13 @@ class States(Enum):
     PLAYING = 2
     GAME_OVER = 3
     PAUSED = 4
+    EXIT = 5
     
 # Controlador de estados da aplicacao
-GLOBAL_STATE = States.PLAYING
+GLOBAL_STATE = States.MAIN_MENU
+
+# Usado para controlar os botoes clicaveis do menu principal
+firstRun = True
 
 # Classe para o Pac-Man
 class Pacman:
@@ -345,8 +348,9 @@ class SPFGhost(Ghost):
     
     def update(self, pacPosX, pacPosY, lab):
         self.accumulator += self.velocidade
-        start = (self.posX, self.posY)  # Posição inicial do fantasma
-        goal = (pacPosX, pacPosY)  # Posição do Pac-Man (destino)
+        # Posicao inicial do fantasma
+        start = (self.posX, self.posY)  
+        goal = (pacPosX, pacPosY)  
         
         if random.random() < 0.01:
             self.dir = random.choice(self.possibleMoveList)
@@ -742,7 +746,7 @@ class Labyrinth:
             dy = 1
         else:
             dy = -1
-    
+
         next_entity = self.logicalLab[self.pacPosX + dx][self.pacPosY + dy]
         if isinstance(next_entity, Entity):
             if next_entity.isCollision:
@@ -751,7 +755,7 @@ class Labyrinth:
                 next_entity.toKillPlayer = True
             elif next_entity.isPickup:
                 next_entity.toBePicked = True
-    
+
         return False
 
 
@@ -819,10 +823,13 @@ class Labyrinth:
 
 
 def main():
-    # Estados
+    # Variaveis globais
     global GLOBAL_STATE
+    global firstRun
     # Indice do laboratorio, incrementa conforme os niveis sobem
     lab_index = 1
+    clickCoord = (0, 0)
+    buttonLocations = []
     pacman = Pacman()
     dirAtual = Direcoes.DIREITA
     lab = Labyrinth()
@@ -843,21 +850,22 @@ def main():
                     pygame.quit()
                     sys.exit()
                 elif(evento.key == K_SPACE):
-                    if(GLOBAL_STATE == States.PAUSED):
-                        GLOBAL_STATE = States.PLAYING
-                    elif(GLOBAL_STATE == States.GAME_OVER):
-                        # Volta para o primeiro nivel
-                        lab.reset()
-                        lab_index = 1
-                        lab.readLabFromFile(lab_index)
-                        lab.convertTextLabIntoLogicalLab(pacman)
-                        lab.totalBallAmount = lab.normalBallAmount
-                        lab.totalSuperBallAmount = lab.superBallAmount
-                        lab.pacPosX = pacman.x
-                        lab.pacPosY = pacman.y
-                        GLOBAL_STATE = States.PLAYING
-                    else:
-                        GLOBAL_STATE = States.PAUSED
+                    if GLOBAL_STATE != States.MAIN_MENU:
+                        if(GLOBAL_STATE == States.PAUSED):
+                            GLOBAL_STATE = States.PLAYING
+                        elif(GLOBAL_STATE == States.GAME_OVER):
+                            # Volta para o primeiro nivel
+                            lab.reset()
+                            lab_index = 1
+                            lab.readLabFromFile(lab_index)
+                            lab.convertTextLabIntoLogicalLab(pacman)
+                            lab.totalBallAmount = lab.normalBallAmount
+                            lab.totalSuperBallAmount = lab.superBallAmount
+                            lab.pacPosX = pacman.x
+                            lab.pacPosY = pacman.y
+                            GLOBAL_STATE = States.PLAYING
+                        else:
+                            GLOBAL_STATE = States.PAUSED
                 elif(evento.key == K_LEFT):
                     dirAtual = Direcoes.ESQUERDA
                 elif(evento.key == K_RIGHT):
@@ -868,10 +876,32 @@ def main():
                     dirAtual = Direcoes.CIMA
                 else:
                     print("Pressed key = " + str(evento.key))
+            elif evento.type == MOUSEBUTTONDOWN:
+                clickCoord = pygame.mouse.get_pos()
+                print(clickCoord)
+                for button, representedState in buttonLocations:
+                    if button.collidepoint(clickCoord):
+                        GLOBAL_STATE = representedState
 
         if GLOBAL_STATE == States.MAIN_MENU:
             # Fazer o menu
-            pass
+            tela.blit(pygame.transform.scale(background, (largura, altura)), (0,0))
+            text_surface = fonte.render("JOGAR", True, branco)
+            text_pos = ((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 1.5)
+            tela.blit(text_surface, text_pos)
+
+            text_surface2 = fonte.render("SAIR", True, branco)
+            text_pos2 = ((largura - text_surface2.get_width()) // 2, (altura - text_surface2.get_height()) // 1.3)
+            tela.blit(text_surface2, text_pos2)
+
+            if firstRun:
+                button_rect = text_surface.get_rect(topleft=text_pos)
+                button_rect2 = text_surface2.get_rect(topleft=text_pos2)
+                buttonLocations.append((button_rect2, States.EXIT))
+                buttonLocations.append((button_rect, States.PLAYING))
+                firstRun = False
+
+
         elif GLOBAL_STATE == States.PAUSED:
             s = pygame.Surface((largura, altura))
             s.set_alpha(2)
@@ -880,6 +910,7 @@ def main():
             text_surface = fonte.render("PAUSE", True, branco)
             tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
             pass
+
         elif GLOBAL_STATE == States.PLAYING:
             # Troca o nivel se acabou as pellets
             if lab.totalBallAmount <= 0:
@@ -962,9 +993,10 @@ def main():
             tela.blit(s,(0,0))
             text_surface = fonte.render("MORREU", True, branco)
             tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
-            pass
+        elif GLOBAL_STATE == States.EXIT:
+            pygame.quit()
+            sys.exit()
         
-
         pygame.display.flip()
 
         # Controle de FPS
