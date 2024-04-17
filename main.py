@@ -57,6 +57,16 @@ class Direcoes(Enum):
     ESQUERDA = 3
     DIREITA = 4
     
+
+class States(Enum):
+    MAIN_MENU = 1
+    PLAYING = 2
+    GAME_OVER = 3
+    PAUSED = 4
+    
+# Controlador de estados da aplicacao
+GLOBAL_STATE = States.PLAYING
+
 # Classe para o Pac-Man
 class Pacman:
 
@@ -838,6 +848,8 @@ class Labyrinth:
 
 
 def main():
+    # Estados
+    global GLOBAL_STATE
     # Indice do laboratorio, incrementa conforme os niveis sobem
     lab_index = 1
     pacman = Pacman()
@@ -849,9 +861,6 @@ def main():
     lab.totalBallAmount = lab.normalBallAmount
     lab.totalSuperBallAmount = lab.superBallAmount
 
-    
-    paused = False
-    dead = False
     # Loop principal
     while True:
         for evento in pygame.event.get():
@@ -863,50 +872,44 @@ def main():
                     pygame.quit()
                     sys.exit()
                 elif(evento.key == K_SPACE):
-                    paused = not paused
-                elif(evento.key == K_1):
-                    lab.reset()
-                    lab_index = 1
-                    lab.readLabFromFile(lab_index)
-                    lab.convertTextLabIntoLogicalLab(pacman)
-                    lab.totalBallAmount = lab.normalBallAmount
-                    lab.totalSuperBallAmount = lab.superBallAmount
-                    lab.pacPosX = pacman.x
-                    lab.pacPosY = pacman.y
-                elif(evento.key == K_2):
-                    lab.reset()
-                    lab_index = 2
-                    lab.readLabFromFile(lab_index)
-                    lab.convertTextLabIntoLogicalLab(pacman)
-                    lab.totalBallAmount = lab.normalBallAmount
-                    lab.totalSuperBallAmount = lab.superBallAmount
-                    lab.pacPosX = pacman.x
-                    lab.pacPosY = pacman.y
-                elif(evento.key == K_3):
-                    lab.reset()
-                    lab_index = 3
-                    lab.readLabFromFile(lab_index)
-                    lab.convertTextLabIntoLogicalLab(pacman)
-                    lab.totalBallAmount = lab.normalBallAmount
-                    lab.totalSuperBallAmount = lab.superBallAmount
-                    lab.pacPosX = pacman.x
-                    lab.pacPosY = pacman.y
+                    if(GLOBAL_STATE == States.PAUSED):
+                        GLOBAL_STATE = States.PLAYING
+                    elif(GLOBAL_STATE == States.GAME_OVER):
+                        # Volta para o primeiro nivel
+                        lab.reset()
+                        lab_index = 1
+                        lab.readLabFromFile(lab_index)
+                        lab.convertTextLabIntoLogicalLab(pacman)
+                        lab.totalBallAmount = lab.normalBallAmount
+                        lab.totalSuperBallAmount = lab.superBallAmount
+                        lab.pacPosX = pacman.x
+                        lab.pacPosY = pacman.y
+                        GLOBAL_STATE = States.PLAYING
+                    else:
+                        GLOBAL_STATE = States.PAUSED
+                elif(evento.key == K_LEFT):
+                    dirAtual = Direcoes.ESQUERDA
+                elif(evento.key == K_RIGHT):
+                    dirAtual = Direcoes.DIREITA
+                elif(evento.key == K_DOWN):
+                    dirAtual = Direcoes.BAIXO
+                elif(evento.key == K_UP):
+                    dirAtual = Direcoes.CIMA
+                else:
+                    print("Pressed key = " + str(evento.key))
 
-
-
-        if not paused:
-            if dead:
-                # Volta para o primeiro nivel
-                dead = False
-                lab.reset()
-                lab_index = 1
-                lab.readLabFromFile(lab_index)
-                lab.convertTextLabIntoLogicalLab(pacman)
-                lab.totalBallAmount = lab.normalBallAmount
-                lab.totalSuperBallAmount = lab.superBallAmount
-                lab.pacPosX = pacman.x
-                lab.pacPosY = pacman.y
-            
+        if GLOBAL_STATE == States.MAIN_MENU:
+            # Fazer o menu
+            pass
+        elif GLOBAL_STATE == States.PAUSED:
+            s = pygame.Surface((largura, altura))
+            s.set_alpha(2)
+            s.fill((30,30,30))
+            tela.blit(s,(0,0))
+            text_surface = fonte.render("PAUSE", True, branco)
+            tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
+            pass
+        elif GLOBAL_STATE == States.PLAYING:
             # Troca o nivel se acabou as pellets
             if lab.totalBallAmount <= 0:
                 lab.reset()
@@ -921,18 +924,6 @@ def main():
                 lab.pacPosY = pacman.y
             
             # Pensando em turnos, o "jogador" vai ser calculado antes das entidades dos fantasmas
-            # Logica do player (pacman)
-            teclas = pygame.key.get_pressed()
-
-            # Usando essa varaivel pois o pacman se move sozinho
-            if(teclas[pygame.K_RIGHT]):
-                dirAtual = Direcoes.DIREITA
-            elif(teclas[pygame.K_LEFT]):
-                dirAtual = Direcoes.ESQUERDA
-            elif(teclas[pygame.K_DOWN]):
-                dirAtual = Direcoes.BAIXO
-            elif(teclas[pygame.K_UP]):
-                dirAtual = Direcoes.CIMA
 
             pacMove = False
             ghostMove = False
@@ -987,25 +978,23 @@ def main():
                                         lab.superBallAmount -= 1
                                     elif isinstance(entity, Ghost):
                                         ghostMove = False
-                                        dead = True
-                                        paused = True
+                                        GLOBAL_STATE = States.GAME_OVER
                                         pass
                                     entity.isDrawable = False
                                 entity.toBePicked = False
             for entity in priorityDrawList:
                 entity.draw(tela)
-        else:
+            pass
+        elif GLOBAL_STATE == States.GAME_OVER:
             s = pygame.Surface((largura, altura))
             s.set_alpha(2)
             s.fill((30,30,30))
             tela.blit(s,(0,0))
-            if dead:
-                text_surface = fonte.render("MORREU", True, branco)
-            else:
-                text_surface = fonte.render("PAUSE", True, branco)
+            text_surface = fonte.render("MORREU", True, branco)
             tela.blit(text_surface,((largura - text_surface.get_width()) // 2, (altura - text_surface.get_height()) // 2))
-            
-            
+            pass
+        
+
         pygame.display.flip()
 
         # Controle de FPS
