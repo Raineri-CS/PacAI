@@ -16,8 +16,11 @@ largura, altura = 810, 600
 tela = pygame.display.set_mode((largura, altura))
 pygame.display.set_caption("Pac-Man Clone")
 
+# Tamanho de fonte global
+FONT_SIZE = 48
+
 # Criar uma fonte de texto (tamanho 48)
-fonte = pygame.font.Font(None, 48)
+fonte = pygame.font.Font(None, FONT_SIZE)
 
 # Criar as texturas a serem usadas
 background = pygame.image.load("./resources/bg.png", "bg.png")
@@ -42,6 +45,14 @@ ciano = (0,255,255)
 azEscuro = (0,0,200)
 corShark = (124,194,230)
 corShark2 = (43,127,191)
+
+vermelho = (255, 0, 0)
+laranja = (255, 165, 0)
+amarelo = (255, 255, 0)
+verde = (0, 128, 0)
+azul = (0, 0, 255)
+anil = (75, 0, 130)
+violeta = (238, 130, 238)
 
 # Tamanho do grid 
 tamanho_celula = 30
@@ -825,6 +836,9 @@ def main():
     dirAtual = Direcoes.DIREITA
     lab = Labyrinth()
 
+    title = "Labirinto das pérolas"
+    titleRainbow = [vermelho,laranja,amarelo,verde,azul,anil,violeta]
+    
     lab.readLabFromFile(lab_index)
     lab.convertTextLabIntoLogicalLab(pacman)
     lab.totalBallAmount = lab.normalBallAmount
@@ -884,6 +898,16 @@ def main():
             text_surface2 = fonte.render("SAIR", True, branco)
             text_pos2 = ((largura - text_surface2.get_width()) // 2, (altura - text_surface2.get_height()) // 1.3)
             tela.blit(text_surface2, text_pos2)
+
+            # Offset
+            i = 0
+            for letra in title:
+                temp_srf = fonte.render(title,True,branco)
+                text_srf = fonte.render(letra, True, random.choice(titleRainbow))
+                text_pos = (((largura - temp_srf.get_width()) // 2) + (i * FONT_SIZE / 2), (altura - temp_srf.get_height()) // 5)
+                tela.blit(text_srf, text_pos)
+                i += 1
+
 
             if firstRun:
                 button_rect = text_surface.get_rect(topleft=text_pos)
