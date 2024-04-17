@@ -477,23 +477,19 @@ class Inky(Ghost):
                     current = came_from[current]
                 path.reverse()
                 
-                # Se o caminho não estiver vazio, defina a direção para o próximo passo
+                # Se caminho nao vazio...
                 if path:
                     next_step = path.pop(0)
                     self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
             else:
-                # Calcular o caminho usando o algoritmo A* e armazenar na lista de caminhos
+                # Calcular o caminho usando A* e armazenar na lista de caminhos
                 self.path = self.astar_search((self.posX, self.posY), (pacPosX, pacPosY), lab)
-
-                # Se o caminho encontrado não estiver vazio, definir a direção para o próximo passo
+                # Se o caminho encontrado não estiver vazio, definir dir para o prox passo
                 if self.path:
                     next_step = self.path.pop(0)
                     self.dir = self.get_direction(self.posX, self.posY, next_step[0], next_step[1])
     
     def astar_search(self, start, goal, lab):
-        # Implementação do algoritmo A* aqui
-        
-        # Exemplo de estrutura de dados para a busca A*
         frontier = []
         heapq.heappush(frontier, (0, start))
         came_from = {}
@@ -539,7 +535,6 @@ class Inky(Ghost):
     def heuristic(self, goal, next):
         # Heurística de Manhattan
         return abs(goal[0] - next[0]) + abs(goal[1] - next[1])
-    
 
     def get_neighbors(self, pos, lab):
         # Retornar posições vizinhas (cima, baixo, esquerda, direita)
@@ -755,10 +750,7 @@ class Labyrinth:
                 next_entity.toKillPlayer = True
             elif next_entity.isPickup:
                 next_entity.toBePicked = True
-
         return False
-
-
     
     def ghostCollideLookAhead(self, ghost):
         dx, dy = 0, 0
@@ -778,7 +770,6 @@ class Labyrinth:
             self.toKillPlayer = True
     
         return False
-
     
     def convertTextLabIntoLogicalLab(self, pac):
         for i, line in enumerate(self.textLab):
@@ -974,9 +965,9 @@ def main():
                         if entity.toBePicked or entity.toKillPlayer or ghostMove or pacMove:
                             if pacman.x == entity.posX and pacman.y == entity.posY:
                                 if isinstance(entity, Ball):
-                                    lab.normalBallAmount -= 1
+                                    lab.totalBallAmount -= 1
                                 elif isinstance(entity, SuperBall):
-                                    lab.superBallAmount -= 1
+                                    lab.totalBallAmount -= 1
                                 elif isinstance(entity, Ghost):
                                     ghostMove = False
                                     GLOBAL_STATE = States.GAME_OVER
