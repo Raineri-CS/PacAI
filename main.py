@@ -954,34 +954,33 @@ def main():
             priorityDrawList = []
             for line in lab.logicalLab:
                 for entity in line:
-                    if(isinstance(entity, Entity) or isinstance(entity, Ghost)):
+                    if isinstance(entity, Ghost):
+                        entity.genPossibleMoves(lab)
+                        entity.update(pacman.x, pacman.y, lab)
+                        # NOTE mecanismo de unstuck
+                        while(lab.ghostCollideLookAhead(entity)):
+                            entity.dir = random.choice(list(Direcoes))
+                        entity.move(entity.dir)
+                        ghostMove = entity.accumulator == 0
+            
+                    if isinstance(entity, Entity) and entity.isDrawable:
                         if isinstance(entity, Ghost):
-                            entity.genPossibleMoves(lab)
-                            entity.update(pacman.x, pacman.y, lab)
-                            # NOTE mecanismo de unstuck
-                            while(lab.ghostCollideLookAhead(entity)):
-                                entity.dir = random.choice(list(Direcoes))
-                            entity.move(entity.dir)
-                            if entity.accumulator == 0:
-                                ghostMove = True
-                        if entity.isDrawable:
-                            if(isinstance(entity, Ghost)):
-                                priorityDrawList.append(entity)
-                            else:
-                                entity.draw(tela)
-                                
-                            if entity.toBePicked or entity.toKillPlayer or ghostMove or pacMove:
-                                if pacman.x == entity.posX and pacman.y == entity.posY:
-                                    if isinstance(entity, Ball):
-                                        lab.normalBallAmount -= 1
-                                    elif isinstance(entity, SuperBall):
-                                        lab.superBallAmount -= 1
-                                    elif isinstance(entity, Ghost):
-                                        ghostMove = False
-                                        GLOBAL_STATE = States.GAME_OVER
-                                        pass
-                                    entity.isDrawable = False
-                                entity.toBePicked = False
+                            priorityDrawList.append(entity)
+                        else:
+                            entity.draw(tela)
+            
+                        if entity.toBePicked or entity.toKillPlayer or ghostMove or pacMove:
+                            if pacman.x == entity.posX and pacman.y == entity.posY:
+                                if isinstance(entity, Ball):
+                                    lab.normalBallAmount -= 1
+                                elif isinstance(entity, SuperBall):
+                                    lab.superBallAmount -= 1
+                                elif isinstance(entity, Ghost):
+                                    ghostMove = False
+                                    GLOBAL_STATE = States.GAME_OVER
+                                entity.isDrawable = False
+                            entity.toBePicked = False
+            
             for entity in priorityDrawList:
                 entity.draw(tela)
             pass
