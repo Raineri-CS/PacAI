@@ -720,7 +720,7 @@ class Labyrinth:
 
     def addSPFGhost(self, x, y):
         self.textLab[x][y] = 'L'
-        self.logicalLab[x][y] = SPFGhost(0.03, x, y, rosa)
+        self.logicalLab[x][y] = SPFGhost(0.06, x, y, rosa)
         self.logicalLab[x][y].origin = (x, y)
     
     def addInky(self, x, y):
@@ -916,7 +916,7 @@ def main():
                 tela.blit(text_srf, text_pos3)
                 i += 1
                 index_cor += 1  # Incrementa o índice para a próxima cor
-            
+
 
 
 
