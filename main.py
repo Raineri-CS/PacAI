@@ -733,77 +733,48 @@ class Labyrinth:
             print(' '.join(x))
     
     def collideLookAhead(self, pacDir):
-        if(pacDir == Direcoes.DIREITA):
-            if isinstance(self.logicalLab[self.pacPosX + 1][self.pacPosY], Entity):
-                if self.logicalLab[self.pacPosX + 1][self.pacPosY].isCollision:
-                    return True
-                elif self.logicalLab[self.pacPosX + 1][self.pacPosY].isEnemy:
-                    self.logicalLab[self.pacPosX + 1][self.pacPosY].toKillPlayer = True
-                    pass
-                elif self.logicalLab[self.pacPosX + 1][self.pacPosY].isPickup:
-                    self.logicalLab[self.pacPosX + 1][self.pacPosY].toBePicked = True
-                
-            return False
-        elif(pacDir == Direcoes.ESQUERDA):
-            if isinstance(self.logicalLab[self.pacPosX - 1][self.pacPosY], Entity):
-                if self.logicalLab[self.pacPosX - 1][self.pacPosY].isCollision:
-                    return True
-                elif self.logicalLab[self.pacPosX - 1][self.pacPosY].isEnemy:
-                    self.logicalLab[self.pacPosX - 1][self.pacPosY].toKillPlayer = True
-                    pass
-                elif self.logicalLab[self.pacPosX - 1][self.pacPosY].isPickup:
-                    self.logicalLab[self.pacPosX - 1][self.pacPosY].toBePicked = True
-            return False
-        elif(pacDir == Direcoes.BAIXO):
-            if isinstance(self.logicalLab[self.pacPosX][self.pacPosY + 1], Entity):
-                if self.logicalLab[self.pacPosX][self.pacPosY + 1].isCollision:
-                    return True
-                elif self.logicalLab[self.pacPosX][self.pacPosY + 1].isEnemy:
-                    self.logicalLab[self.pacPosX][self.pacPosY + 1].toKillPlayer = True
-                    pass
-                elif self.logicalLab[self.pacPosX][self.pacPosY + 1].isPickup:
-                    self.logicalLab[self.pacPosX][self.pacPosY + 1].toBePicked = True
-            return False
+        dx, dy = 0, 0
+        if pacDir == Direcoes.DIREITA:
+            dx = 1
+        elif pacDir == Direcoes.ESQUERDA:
+            dx = -1
+        elif pacDir == Direcoes.BAIXO:
+            dy = 1
         else:
-            if isinstance(self.logicalLab[self.pacPosX][self.pacPosY -1], Entity):
-                if self.logicalLab[self.pacPosX][self.pacPosY - 1].isCollision:
-                    return True
-                elif self.logicalLab[self.pacPosX][self.pacPosY - 1].isEnemy:
-                    self.logicalLab[self.pacPosX][self.pacPosY - 1].toKillPlayer = True
-                    pass
-                elif self.logicalLab[self.pacPosX][self.pacPosY - 1].isPickup:
-                    self.logicalLab[self.pacPosX][self.pacPosY - 1].toBePicked = True
-            return False
+            dy = -1
+    
+        next_entity = self.logicalLab[self.pacPosX + dx][self.pacPosY + dy]
+        if isinstance(next_entity, Entity):
+            if next_entity.isCollision:
+                return True
+            elif next_entity.isEnemy:
+                next_entity.toKillPlayer = True
+            elif next_entity.isPickup:
+                next_entity.toBePicked = True
+    
+        return False
+
+
     
     def ghostCollideLookAhead(self, ghost):
-        if(ghost.dir == Direcoes.DIREITA):
-            if isinstance(self.logicalLab[ghost.posX + 1][ghost.posY], Entity):
-                if self.logicalLab[ghost.posX + 1][ghost.posY].isCollision:
-                    return True
-            elif isinstance(self.logicalLab[ghost.posX + 1][ghost.posY], Pacman):
-                self.toKillPlayer = True
-            return False
-        elif(ghost.dir == Direcoes.ESQUERDA):
-            if isinstance(self.logicalLab[ghost.posX - 1][ghost.posY], Entity):
-                if self.logicalLab[ghost.posX - 1][ghost.posY].isCollision:
-                    return True
-            elif isinstance(self.logicalLab[ghost.posX - 1][ghost.posY], Pacman):
-                self.toKillPlayer = True
-            return False
-        elif(ghost.dir == Direcoes.BAIXO):
-            if isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Entity):
-                if self.logicalLab[ghost.posX][ghost.posY + 1].isCollision:
-                    return True
-            elif isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Pacman):
-                self.toKillPlayer = True
-            return False
+        dx, dy = 0, 0
+        if ghost.dir == Direcoes.DIREITA:
+            dx = 1
+        elif ghost.dir == Direcoes.ESQUERDA:
+            dx = -1
+        elif ghost.dir == Direcoes.BAIXO:
+            dy = 1
         else:
-            if isinstance(self.logicalLab[ghost.posX][ghost.posY - 1], Entity):
-                if self.logicalLab[ghost.posX][ghost.posY - 1].isCollision:
-                    return True
-            elif isinstance(self.logicalLab[ghost.posX][ghost.posY + 1], Pacman):
-                self.toKillPlayer = True
-            return False
+            dy = -1
+    
+        next_entity = self.logicalLab[ghost.posX + dx][ghost.posY + dy]
+        if isinstance(next_entity, Entity) and next_entity.isCollision:
+            return True
+        elif isinstance(next_entity, Pacman):
+            self.toKillPlayer = True
+    
+        return False
+
     
     def convertTextLabIntoLogicalLab(self, pac):
         for i, line in enumerate(self.textLab):
@@ -962,13 +933,13 @@ def main():
                             entity.dir = random.choice(list(Direcoes))
                         entity.move(entity.dir)
                         ghostMove = entity.accumulator == 0
-            
+
                     if isinstance(entity, Entity) and entity.isDrawable:
                         if isinstance(entity, Ghost):
                             priorityDrawList.append(entity)
                         else:
                             entity.draw(tela)
-            
+
                         if entity.toBePicked or entity.toKillPlayer or ghostMove or pacMove:
                             if pacman.x == entity.posX and pacman.y == entity.posY:
                                 if isinstance(entity, Ball):
@@ -980,7 +951,7 @@ def main():
                                     GLOBAL_STATE = States.GAME_OVER
                                 entity.isDrawable = False
                             entity.toBePicked = False
-            
+
             for entity in priorityDrawList:
                 entity.draw(tela)
             pass
