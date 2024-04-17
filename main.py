@@ -901,12 +901,23 @@ def main():
 
             # Offset
             i = 0
+            index_cor = 0  # Índice para acompanhar a cor atual do arco-íris
+            largura_letra = fonte.render("E", True, branco).get_width()
+            largura_total = largura_letra * len(title)  # Calcula a largura total do título
             for letra in title:
-                temp_srf = fonte.render(title,True,branco)
-                text_srf = fonte.render(letra, True, random.choice(titleRainbow))
-                text_pos = (((largura - temp_srf.get_width()) // 2) + (i * FONT_SIZE / 2), (altura - temp_srf.get_height()) // 5)
-                tela.blit(text_srf, text_pos)
+                # Renderiza cada letra com a cor correspondente do arco-íris
+                text_srf = fonte.render(letra, True, titleRainbow[index_cor % len(titleRainbow)])
+                # Calcula a posição x de cada letra para centralizar o título
+                text_pos_x = (largura - largura_total) // 2 + i * largura_letra
+                # A posição y permanece a mesma, centralizada verticalmente
+                text_pos_y = (altura - text_srf.get_height()) // 5
+                # Atualiza a posição onde o texto será renderizado
+                text_pos3 = (text_pos_x, text_pos_y)
+                tela.blit(text_srf, text_pos3)
                 i += 1
+                index_cor += 1  # Incrementa o índice para a próxima cor
+            
+
 
 
             if firstRun:
