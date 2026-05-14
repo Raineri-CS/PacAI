@@ -24,3 +24,7 @@ The project is structured around a classic Game Loop pattern, maintaining a cons
 2. Run the main script:
    ```bash
    python main.py
+
+## Legal Disclaimer
+
+This is an educational project developed for university assignments. Graphic assets and audio files are used strictly for non-commercial, academic demonstration purposes. All rights belong to their respective owners.
